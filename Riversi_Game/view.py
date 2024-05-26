@@ -1,9 +1,11 @@
 import tkinter as tk
-import Exceptions
 
 
-class View:
-    def __init__(self, board_size=400, column_count=8):
+
+class View(tk.Frame):
+    def __init__(self, parent, board_size=400, column_count=8):
+        super().__init__(parent, borderwidth=15, background='#6e3a00')
+        self.pack()
         self.board_size = board_size
         self.column_count = column_count
         self.field_size = self.board_size/self.column_count
@@ -12,28 +14,23 @@ class View:
                           for _ in range(self.column_count)]
         self.field_list = [[None for _ in range(self.column_count)]
                            for _ in range(self.column_count)]
-        self.board = None
         self.fields = None
         self.border_size = 5
 
-        self.root = tk.Tk()
-
-        self.root.title("Checkers")
-        self.root.geometry(
-            f'{self.board_size+30}x{self.board_size+30}+100+100')
-        self.root.resizable(0, 0)
+        self.root = parent
+        
+        self.controller = None
 
         self.draw_board()
         self.add_event_handlers()
         self.create_start_disks()
-        self.start()
+        
+    def set_controller(self, controller):
+        self.controller = controller
 
     def draw_board(self):
 
-        self.board = tk.Frame(self.root, borderwidth=15, background='#6e3a00')
-        self.board.pack()
-
-        self.fields = tk.Canvas(self.board, width=self.board_size,
+        self.fields = tk.Canvas(self, width=self.board_size,
                                 height=self.board_size, highlightbackground='#6e3a00')
         self.fields.pack(fill='both')
 
@@ -46,9 +43,6 @@ class View:
                 self.field_list[row][column] = field
 
         # TODO: click handler
-
-    def start(self):
-        self.root.mainloop()
 
     def create_start_disks(self):
         self.create_disk(4, 4, "black")
@@ -63,8 +57,6 @@ class View:
                                            padding, ((column-1)*self.field_size) + self.disk_size, ((row-1)*self.field_size) + self.disk_size, fill=color)
             self.disk_list[row][column] = disk
             return disk
-        else:
-            raise Exceptions.FieldTakenException("Field Already Taken")
 
     def add_event_handlers(self):
         self.fields.tag_bind(
@@ -82,6 +74,3 @@ class View:
                 if matrix[i][j] == target:
                     return (i, j)
         return None
-
-
-View()
