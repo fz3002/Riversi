@@ -1,4 +1,5 @@
 import tkinter as tk
+import Exceptions
 
 
 class View:
@@ -43,7 +44,6 @@ class View:
                                                                                              self.field_size)+self.field_size,
                                                      fill='#026e00', outline='black')
                 self.field_list[row][column] = field
-                
 
         # TODO: click handler
 
@@ -57,20 +57,31 @@ class View:
         self.create_disk(4, 5, "white")
 
     def create_disk(self, row, column, color):
-        # TODO: validate if place is taken
-        padding = self.field_size - self.disk_size
-        disk = self.fields.create_oval(((column-1)*self.field_size)+padding, ((row-1)*self.field_size) +
-                                       padding, ((column-1)*self.field_size) + self.disk_size, ((row-1)*self.field_size) + self.disk_size, fill=color)
-        self.disk_list[row][column] = disk
-        return disk
+        if self.disk_list[row][column] == None:
+            padding = self.field_size - self.disk_size
+            disk = self.fields.create_oval(((column-1)*self.field_size)+padding, ((row-1)*self.field_size) +
+                                           padding, ((column-1)*self.field_size) + self.disk_size, ((row-1)*self.field_size) + self.disk_size, fill=color)
+            self.disk_list[row][column] = disk
+            return disk
+        else:
+            raise Exceptions.FieldTakenException("Field Already Taken")
 
     def add_event_handlers(self):
-        self.fields.tag_bind(self.field_list[0][0], '<Button-1>', lambda e: self.create_disk(1,1,'white'))
-        self.fields.tag_bind(self.field_list[0][1], '<Button-1>', lambda e: self.create_disk(2,1,'white'))
-        self.fields.tag_bind(self.field_list[1][0], '<Button-1>', lambda e: self.create_disk(1,2,'white'))
-        self.fields.tag_bind(self.field_list[1][1], '<Button-1>', lambda e: self.create_disk(2,2,'white'))
-        
-    
+        self.fields.tag_bind(
+            self.field_list[0][0], '<Button-1>', lambda e: self.create_disk(1, 1, 'white'))
+        self.fields.tag_bind(
+            self.field_list[0][1], '<Button-1>', lambda e: self.create_disk(2, 1, 'white'))
+        self.fields.tag_bind(
+            self.field_list[1][0], '<Button-1>', lambda e: self.create_disk(1, 2, 'white'))
+        self.fields.tag_bind(
+            self.field_list[1][1], '<Button-1>', lambda e: self.create_disk(2, 2, 'white'))
+
+    def __find_element(self, matrix, target):
+        for i in range(len(matrix)):
+            for j in range(len(matrix[i])):
+                if matrix[i][j] == target:
+                    return (i, j)
+        return None
 
 
 View()
