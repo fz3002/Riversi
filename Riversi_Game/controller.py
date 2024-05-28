@@ -5,8 +5,8 @@ class Controller:
         self.board = model
         self.view = view
 
-    def validate(self, board, x, y, player):
-        if player == 0:
+    def validate(self, board, x, y):
+        if self.board.player == 0:
             color = 'black'
         else:
             color = 'white'
@@ -40,8 +40,8 @@ class Controller:
 
         return valid
 
-    def move(self, array, x, y, player ):
-        if player == 0:
+    def move(self, array, x, y ):
+        if self.board.player == 0:
             color = 'black'
         else:
             color = 'white'
@@ -73,6 +73,7 @@ class Controller:
         for disk in disk_to_convert:
             work_array[disk[0]][disk[1]] = color
 
+        self.board.switch_players()
         return work_array
 
     def __get_neighbours(self, board, x, y):
