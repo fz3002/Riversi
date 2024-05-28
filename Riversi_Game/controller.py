@@ -30,7 +30,7 @@ class Controller:
             current_x = neighbour_x
             current_y = neighbour_y
             while 0 <= current_x <= 7 and 0 <= current_y <= 7:
-                if board[current_x][current_y] is not None:
+                if board[current_x][current_y] is None:
                     break
                 if board[current_x][current_y] == color:
                     valid = True
@@ -49,6 +49,8 @@ class Controller:
         work_array = copy.deepcopy(array)
         neighbours = self.__get_neighbours(array, x, y)
 
+        disk_to_convert = []
+
         for neighbour in neighbours:
             neighbour_x = neighbour[0]
             neighbour_y = neighbour[1]
@@ -60,12 +62,18 @@ class Controller:
             current_x = neighbour_x
             current_y = neighbour_y
             while 0 <= current_x <= 7 and 0 <= current_y <= 7:
-                if work_array[current_x][current_y] is not None:
-                    #TODO: Handle this if
+                if work_array[current_x][current_y] is None:
+                    break
                 if work_array[current_x][current_y] == color:
-                    #TODO: handle this if
+                    disk_to_convert.append(current_x, current_y)
+                    break
                 current_x += direction_vector[0]
                 current_y += direction_vector[1]
+        
+        for disk in disk_to_convert:
+            work_array[disk[0]][disk[1]] = color
+
+        return work_array
 
     def __get_neighbours(self, board, x, y):
         neighbours = []
