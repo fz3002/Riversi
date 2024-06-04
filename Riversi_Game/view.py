@@ -1,10 +1,10 @@
 import tkinter as tk
-
+import tkinter.messagebox
 
 class View(tk.Frame):
     def __init__(self, parent, board_size=400, column_count=8):
         super().__init__(parent, borderwidth=15, background="#6e3a00")
-        self.current_player_label = tk.Label(parent, text = "Player: black")
+        self.current_player_label = tk.Label(parent, text="Player: black")
         self.current_player_label.pack()
         self.pack()
         self.board_size = board_size
@@ -85,17 +85,39 @@ class View(tk.Frame):
             (column * self.field_size) + self.disk_size,
             (row * self.field_size) + self.disk_size,
             fill=color,
-            tags="tile"
+            tags="tile",
         )
         self.disk_list[row][column] = disk
         return disk
 
-    def __find_element(self, matrix, target):
-        for i in range(len(matrix)):
-            for j in range(len(matrix[i])):
-                if matrix[i][j] == target:
-                    return (i, j)
-        return None
-
     def set_current_player_label(self, player):
         self.current_player_label.config(text="Player: " + player)
+
+    def end_game_message(self, score):
+        win = tk.Toplevel()
+        win.wm_title("Game Over")
+
+        winner = max(score, key=lambda x: score[x])
+
+        score_label = tk.Label(win, text=score)
+        winner_label = tk.Label(win)
+        score_label.pack()
+        winner_label.pack()
+
+        back_to_menu_button = tk.Button(win, text="Menu", command=win.destroy)
+        back_to_menu_button.pack()
+
+        if winner == 0:
+            winner_label.config(text="Black player won!!!")
+        else:
+            winner_label.config(text="White player won!!!")
+
+        score_label = tk.Label(win, text=score)
+        winner_label = tk.Label(win)
+
+    def pass_window(self):
+        win = tk.Toplevel()
+        l = tk.Label(win, text="Pass")
+        win.wm_title("Pass")
+        l.pack()
+        win.after(1000, lambda x: win.destroy)

@@ -2,7 +2,6 @@
 """
 
 import copy
-import view
 
 
 class Controller:
@@ -69,6 +68,7 @@ class Controller:
         if self.check_pass():
             print("Pass")
             self.switch_turn()
+            self.view.pass_window()
             # TODO: Inform user of a need to pass and automatically pass
         else:
             print("validating")
@@ -82,6 +82,7 @@ class Controller:
             # TODO: handle game end
             score = self.get_score()
             print(score)
+            self.view.end_game_message(score)
             # TODO: show end score and winner
 
     def move(self, x, y):
