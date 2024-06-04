@@ -68,22 +68,21 @@ class Controller:
         print("Controller")
         if self.check_pass():
             print("Pass")
+            self.switch_turn()
             # TODO: Inform user of a need to pass and automatically pass
         else:
             print("validating")
             if self.validate(int(x), int(y)):
                 print("moving")
-                self.board.board = self.move(int(x),int(y))
+                self.board.board = self.move(int(x), int(y))
+                self.switch_turn()
                 print("board:", *self.board.board, sep="\n")
                 self.view.update_board(self.board.board)
         if self.check_game_end():
-            #TODO: handle game end
+            # TODO: handle game end
             score = self.get_score()
             print(score)
-            #TODO: show end score and winner
-        else:
-            self.switch_turn()
-                
+            # TODO: show end score and winner
 
     def move(self, x, y):
         """Function making a move
@@ -109,6 +108,8 @@ class Controller:
         disk_to_convert = []
 
         for neighbor in neighbors:
+            line = []
+
             neighbor_x = neighbor[0]
             neighbor_y = neighbor[1]
 
@@ -119,11 +120,14 @@ class Controller:
             current_x = neighbor_x
             current_y = neighbor_y
             while 0 <= current_x <= 7 and 0 <= current_y <= 7:
+                line.append((current_x, current_y))
                 if work_array[current_x][current_y] is None:
                     break
                 if work_array[current_x][current_y] == color:
+                    for disk in line:
+                        disk_to_convert.append(disk)
                     break
-                disk_to_convert.append((current_x, current_y))
+
                 current_x += direction_vector[0]
                 current_y += direction_vector[1]
 
@@ -176,7 +180,6 @@ class Controller:
         else:
             self.board.player = 0
             self.view.set_current_player_label("black")
-        
 
     def __get_neighbors(self, board, x, y):
         """Class getting neighbors of given coordinates on the board
@@ -193,5 +196,5 @@ class Controller:
         for i in range(max(0, x - 1), min(x + 2, 8)):
             for j in range(max(0, y - 1), min(y + 2, 8)):
                 if board[i][j] is not None:
-                    neighbors.append((i,j))
+                    neighbors.append((i, j))
         return neighbors

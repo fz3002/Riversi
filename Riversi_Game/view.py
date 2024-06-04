@@ -72,10 +72,10 @@ class View(tk.Frame):
         return col, row
 
     def create_start_disks(self):
-        self.create_disk(3, 3, "black")
-        self.create_disk(4, 4, "black")
-        self.create_disk(4, 3, "white")
-        self.create_disk(3, 4, "white")
+        self.create_disk(3, 3, "white")
+        self.create_disk(4, 4, "white")
+        self.create_disk(4, 3, "black")
+        self.create_disk(3, 4, "black")
 
     def create_disk(self, row, column, color):
         padding = self.field_size - self.disk_size

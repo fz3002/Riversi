@@ -12,7 +12,6 @@ class App(tk.Tk):
 
         m = board.Board()
         v = view.View(self)
-        self.geometry(f"{400+30}x{400+30}+100+100")
         self.resizable(0, 0)
         cont = controller.Controller(m, v)
         v.set_controller(cont)
