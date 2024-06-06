@@ -9,7 +9,9 @@ from tkinter import simpledialog
 class Game(tk.Frame):
     def __init__(self, parent, board_size=400, column_count=8):
         self.root = parent
-        super().__init__(parent, borderwidth=15, background="#6e3a00", width = 500, height=500)
+        super().__init__(
+            parent, borderwidth=15, background="#6e3a00", width=500, height=500
+        )
         self.pack()
         self.button_frame = tk.Frame(self)
         self.button_to_main_window = tk.Button(
@@ -76,11 +78,11 @@ class Game(tk.Frame):
                 )
 
     def draw_played_disk(self, x, y, color):
-        
+
         self.create_disk(x, y, color)
         self.fields.update()
         time.sleep(0.5)
-    
+
     def update_board(self, board):
         self.fields.delete("tile")
         for x in range(self.column_count):
@@ -159,7 +161,9 @@ class Game(tk.Frame):
 
 class Menu(tk.Frame):
     def __init__(self, parent):
-        super().__init__(parent, background="#6e3a00", width = 500, height=500)
+        super().__init__(
+            parent, borderwidth=15, background="#6e3a00", width=500, height=500
+        )
         self.root = parent
         self.controller: Controller
         self.pack(expand=True, fill="both")
@@ -184,7 +188,7 @@ class Menu(tk.Frame):
             width=20,
             font=("BigBlueTerm437 Nerd Font", 20),
             pady=5,
-            state="disabled"
+            state="disabled",
         )
         self.button_new_game = tk.Button(
             self,
@@ -289,15 +293,18 @@ class Menu(tk.Frame):
         self.button_continue["state"] = "normal"
         self.controller.new_game()
         self.root.show_game()
-        
+
     def new_game_vs_ai_button_action(self):
         self.button_continue["state"] = "normal"
         self.controller.new_game_vs_ai()
         self.root.show_game()
 
+
 class Leaderboard(tk.Frame):
     def __init__(self, parent):
-        super().__init__(parent, background="#6e3a00", width = 500, height=500)
+        super().__init__(
+            parent, borderwidth=15, background="#6e3a00", width=500, height=500
+        )
         self.root = parent
         self.controller: Controller
         self.pack(expand=True, fill="both")
