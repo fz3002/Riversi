@@ -1,18 +1,22 @@
 """Module containing controller class handling view and model/s
 """
-#TODO: AI
-#TODO: Save to file
-#TODO: Read board state from save file
+
+# TODO: AI
 
 import copy
+import datetime
+import json
+import os
+from types import SimpleNamespace
 
 
 class Controller:
     """Controller class handling communications between model and view in mvc"""
 
-    def __init__(self, model, view):
+    def __init__(self, model, view, menu):
         self.board = model
         self.view = view
+        self.menu = menu
         self.passed = False
         self.end = False
 
@@ -182,8 +186,8 @@ class Controller:
         is_board_full: bool = True
         for row in enumerate(self.board.board):
             for field in enumerate(row[1]):
-                if field[1] == '':
-                    is_board_full =  False
+                if field[1] == "":
+                    is_board_full = False
                     break
 
         if is_board_full:
@@ -197,6 +201,30 @@ class Controller:
         else:
             self.board.player = 0
             self.view.set_current_player_label("black")
+
+    def save_to_file(self):
+        filename = self.__generate_save_file_name()
+        save_dir = "Saves"
+        
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+        
+        filepath = os.path.join(save_dir, filename)
+        
+        with open(filepath, "w", encoding="UTF-8") as f:
+            f.write(repr(self.board))
+
+    def load_form_file(self, filepath):
+        with open(filepath, "r", encoding="UTF-8") as f:
+            read_json = f.readline()
+            self.board = json.loads(read_json, object_hook=lambda x: SimpleNamespace(**x))
+        
+        self.view.update_board(self.board.board)
+    
+    def __generate_save_file_name(self) -> str:
+        now = datetime.datetime.now()
+        date_str = now.strftime("%Y-%m-%d_%H-%M-%S")
+        return f"save_{date_str}.txt"
 
     def __get_neighbors(self, board, x, y):
         """Class getting neighbors of given coordinates on the board
