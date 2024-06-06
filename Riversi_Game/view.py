@@ -1,7 +1,9 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import Scrollbar, messagebox
 from controller import Controller
 from tkinter import filedialog
+from tkinter import simpledialog
+
 
 class Game(tk.Frame):
     def __init__(self, parent, board_size=400, column_count=8):
@@ -10,7 +12,16 @@ class Game(tk.Frame):
         self.pack()
         self.button_frame = tk.Frame(self)
         self.button_to_main_window = tk.Button(
-            self, text="Go Back To Menu", command=self.root.show_menu
+            self,
+            text="Menu",
+            command=self.root.show_menu,
+            bg="#026e00",
+            fg="#ffe200",
+            activebackground="#015400",
+            activeforeground="#ffe200",
+            height=2,
+            width=10,
+            font=("BigBlueTerm437 Nerd Font", 20),
         )
         self.button_to_main_window.pack()
         self.current_player_label = tk.Label(
@@ -19,7 +30,7 @@ class Game(tk.Frame):
             background="#6e3a00",
             foreground="Black",
             font=("BigBlueTerm437 Nerd Font", 25),
-            pady=10,
+            pady=15,
         )
         self.current_player_label.pack()
         self.board_size = board_size
@@ -116,6 +127,28 @@ class Game(tk.Frame):
     def pass_window(self):
         messagebox.showinfo("Pass window", "Pass")
 
+    def leaderboard_window(self):
+        choice = messagebox.askquestion(
+            title="LeaderBoard",
+            message="BlackPlayer | Do you want to add your score to leaderboard",
+            type=messagebox.YESNO,
+        )
+        if choice:
+            nickname_black = simpledialog.askstring(
+                "Nickname", "Enter Nickname: ", parent=self
+            )
+        choice = messagebox.askquestion(
+            title="LeaderBoard",
+            message="WhitePlayer | Do you want to add your score to leaderboard",
+            type=messagebox.YESNO,
+        )
+        if choice:
+            nickname_white = simpledialog.askstring(
+                "Nickname", "Enter Nickname: ", parent=self
+            )
+
+        return (nickname_black, nickname_white)
+
 
 class Menu(tk.Frame):
     def __init__(self, parent):
@@ -197,10 +230,24 @@ class Menu(tk.Frame):
             font=("BigBlueTerm437 Nerd Font", 20),
             pady=5,
         )
+        self.button_leaderBoard = tk.Button(
+            self,
+            text="Leaderboard",
+            command=self.root.show_leaderboard,
+            bg="#026e00",
+            fg="#ffe200",
+            activebackground="#015400",
+            activeforeground="#ffe200",
+            height=2,
+            width=20,
+            font=("BigBlueTerm437 Nerd Font", 20),
+            pady=5,
+        )
         self.button_play.pack()
         self.button_play_vs_ai.pack()
         self.button_save.pack()
         self.button_load.pack()
+        self.button_leaderBoard.pack()
         self.button_exit.pack()
 
     def set_controller(self, controller):
@@ -208,7 +255,50 @@ class Menu(tk.Frame):
 
     def save_button_action(self):
         self.controller.save_to_file()
-        
+
     def load_button_action(self):
-        filepath = filedialog.askopenfilename()
+        filepath = filedialog.askopenfilename(
+            defaultextension="txt", initialdir="Saves"
+        )
         self.controller.load_form_file(filepath)
+
+
+class Leaderboard(tk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent, background="#6e3a00")
+        self.root = parent
+        self.controller: Controller
+        self.pack(expand=True, fill="both")
+        self.button_to_main_window = tk.Button(
+            self,
+            text="Menu",
+            command=self.root.show_menu,
+            bg="#026e00",
+            fg="#ffe200",
+            activebackground="#015400",
+            activeforeground="#ffe200",
+            height=2,
+            width=10,
+            font=("BigBlueTerm437 Nerd Font", 20),
+        )
+        self.button_to_main_window.pack()
+        self.scroll_bar = Scrollbar(self)
+        self.leaderboard = tk.Text(
+            self,
+            wrap="word",
+            background="#6e3a00",
+            foreground="#ffe200",
+            yscrollcommand=self.scroll_bar.set,
+            font=("BigBlueTerm437 Nerd Font", 20),
+        )
+        self.scroll_bar.pack(side="left", fill="y")
+        self.leaderboard.pack(side="right", fill="both", expand=True)
+
+        # TODO: add elements to the leaderboard
+
+    def set_controller(self, controller):
+        self.controller = controller
+
+    def populate_leaderboard(self, dict):
+        for key, value in dict.items():
+            self.leaderboard.insert(tk.END, f"{key}: {value}\n")

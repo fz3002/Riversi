@@ -13,12 +13,15 @@ from types import SimpleNamespace
 class Controller:
     """Controller class handling communications between model and view in mvc"""
 
-    def __init__(self, model, view, menu):
+    def __init__(self, model, view, menu, leaderboard):
         self.board = model
         self.view = view
         self.menu = menu
+        self.leaderboard = leaderboard
         self.passed = False
         self.end = False
+        self.scoreboard: dict[str, int]
+        self.read_scores()
 
     def validate(self, x, y):
         """Method validating moves given by user
@@ -144,8 +147,10 @@ class Controller:
 
         if self.end:
             score = self.get_score()
-            print(score)
             self.view.end_game_message(score)
+            (nickname_black, nickname_white) = self.view.leaderboard_window()
+            self.add_to_scoreboard(score, nickname_black, nickname_white)
+            self.save_scores()
 
     def get_score(self):
         """Function to get the score at the end of the game
@@ -205,22 +210,49 @@ class Controller:
     def save_to_file(self):
         filename = self.__generate_save_file_name()
         save_dir = "Saves"
-        
+
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
-        
+
         filepath = os.path.join(save_dir, filename)
-        
+
         with open(filepath, "w", encoding="UTF-8") as f:
             f.write(repr(self.board))
 
     def load_form_file(self, filepath):
         with open(filepath, "r", encoding="UTF-8") as f:
             read_json = f.readline()
-            self.board = json.loads(read_json, object_hook=lambda x: SimpleNamespace(**x))
-        
+            self.board = json.loads(
+                read_json, object_hook=lambda x: SimpleNamespace(**x)
+            )
+
         self.view.update_board(self.board.board)
-    
+
+    def save_scores(self):
+        with open("scoreboard.txt", "w", encoding="UTF-8") as f:
+
+            f.write(json.dumps(self.scoreboard))
+
+    def read_scores(self):
+        if os.path.exists("scoreboard.txt"):
+            with open("scoreboard.txt", "r", encoding="UTF-8") as f:
+                self.scoreboard = json.loads(f.readline())
+        else:
+            self.scoreboard = {}
+            
+        self.leaderboard.populate_leaderboard(self.scoreboard)
+
+    def add_to_scoreboard(self, score, nickname_black, nickname_white):
+        if nickname_black not in self.scoreboard.keys():
+            self.scoreboard[nickname_black] = score[0]
+        else:
+            self.scoreboard[nickname_black] += score[0]
+        if nickname_white not in self.scoreboard.keys():
+            self.scoreboard[nickname_white] = score[1]
+        else:
+            self.scoreboard[nickname_white] += score[1]
+        self.leaderboard.populate_leaderboard(self.scoreboard)
+
     def __generate_save_file_name(self) -> str:
         now = datetime.datetime.now()
         date_str = now.strftime("%Y-%m-%d_%H-%M-%S")

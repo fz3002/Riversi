@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 *.vscode
 *Saves
+scoreboard.txt
 # C extensions
 *.so
 
