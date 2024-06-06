@@ -24,7 +24,7 @@ class Game(tk.Frame):
             activeforeground="#ffe200",
             height=2,
             width=10,
-            font=("BigBlueTerm437 Nerd Font", 20),
+            font=("Impact", 20),
         )
         self.button_to_main_window.pack()
         self.current_player_label = tk.Label(
@@ -32,7 +32,7 @@ class Game(tk.Frame):
             text="Player: black",
             background="#6e3a00",
             foreground="Black",
-            font=("BigBlueTerm437 Nerd Font", 25),
+            font=("Impact", 25),
             pady=15,
         )
         self.current_player_label.pack()
@@ -170,7 +170,7 @@ class Menu(tk.Frame):
         self.label = tk.Label(
             self,
             text="Menu",
-            font=("BigBlueTerm437 Nerd Font", 25),
+            font=("Impact", 25),
             background="#6e3a00",
             foreground="#ffe200",
             pady=10,
@@ -186,7 +186,7 @@ class Menu(tk.Frame):
             activeforeground="#ffe200",
             height=2,
             width=20,
-            font=("BigBlueTerm437 Nerd Font", 20),
+            font=("Impact", 20),
             pady=5,
             state="disabled",
         )
@@ -200,7 +200,7 @@ class Menu(tk.Frame):
             activeforeground="#ffe200",
             height=2,
             width=20,
-            font=("BigBlueTerm437 Nerd Font", 20),
+            font=("Impact", 20),
             pady=5,
         )
         self.button_play_vs_ai = tk.Button(
@@ -213,7 +213,7 @@ class Menu(tk.Frame):
             activeforeground="#ffe200",
             height=2,
             width=20,
-            font=("BigBlueTerm437 Nerd Font", 20),
+            font=("Impact", 20),
             pady=5,
         )
         self.button_save = tk.Button(
@@ -226,7 +226,7 @@ class Menu(tk.Frame):
             activeforeground="#ffe200",
             height=2,
             width=20,
-            font=("BigBlueTerm437 Nerd Font", 20),
+            font=("Impact", 20),
             pady=5,
         )
         self.button_load = tk.Button(
@@ -239,7 +239,7 @@ class Menu(tk.Frame):
             activeforeground="#ffe200",
             height=2,
             width=20,
-            font=("BigBlueTerm437 Nerd Font", 20),
+            font=("Impact", 20),
             pady=5,
         )
         self.button_exit = tk.Button(
@@ -252,7 +252,7 @@ class Menu(tk.Frame):
             activeforeground="#ffe200",
             height=2,
             width=20,
-            font=("BigBlueTerm437 Nerd Font", 20),
+            font=("Impact", 20),
             pady=5,
         )
         self.button_leaderBoard = tk.Button(
@@ -265,7 +265,7 @@ class Menu(tk.Frame):
             activeforeground="#ffe200",
             height=2,
             width=20,
-            font=("BigBlueTerm437 Nerd Font", 20),
+            font=("Impact", 20),
             pady=5,
         )
         self.button_continue.pack()
@@ -318,7 +318,7 @@ class Leaderboard(tk.Frame):
             activeforeground="#ffe200",
             height=2,
             width=10,
-            font=("BigBlueTerm437 Nerd Font", 20),
+            font=("Impact", 20),
         )
         self.button_to_main_window.pack()
         self.scroll_bar = Scrollbar(self)
@@ -328,7 +328,7 @@ class Leaderboard(tk.Frame):
             background="#6e3a00",
             foreground="#ffe200",
             yscrollcommand=self.scroll_bar.set,
-            font=("BigBlueTerm437 Nerd Font", 20),
+            font=("Impact", 20),
         )
         self.scroll_bar.pack(side="left", fill="y")
         self.leaderboard.pack(side="right", fill="both", expand=True)
