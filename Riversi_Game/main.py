@@ -3,7 +3,6 @@ import board
 import view
 import tkinter as tk
 
-# TODO: score board somehow
 
 
 class App(tk.Tk):
