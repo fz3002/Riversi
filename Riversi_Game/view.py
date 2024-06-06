@@ -1,5 +1,7 @@
 import tkinter as tk
-import tkinter.messagebox
+from tkinter import messagebox
+from controller import Controller
+
 
 class View(tk.Frame):
     def __init__(self, parent, board_size=400, column_count=8):
@@ -14,15 +16,19 @@ class View(tk.Frame):
         self.disk_list = [
             [None for _ in range(self.column_count)] for _ in range(self.column_count)
         ]
-        self.field_list = [
-            [None for _ in range(self.column_count)] for _ in range(self.column_count)
-        ]
-        self.fields = None
+        self.fields = self.fields = tk.Canvas(
+            self,
+            width=self.board_size,
+            height=self.board_size,
+            highlightbackground="#6e3a00",
+        )
+        self.fields.pack(fill="both")
+
         self.border_size = 5
 
         self.root = parent
 
-        self.controller = None
+        self.controller : Controller
 
         self.draw_board()
         self.fields.bind("<Button-1>", self.mouse_click_handler)
@@ -32,15 +38,6 @@ class View(tk.Frame):
         self.controller = controller
 
     def draw_board(self):
-
-        self.fields = tk.Canvas(
-            self,
-            width=self.board_size,
-            height=self.board_size,
-            highlightbackground="#6e3a00",
-        )
-        self.fields.pack(fill="both")
-
         for row in range(self.column_count):
             for column in range(self.column_count):
                 field = self.fields.create_rectangle(
@@ -51,13 +48,12 @@ class View(tk.Frame):
                     fill="#026e00",
                     outline="black",
                 )
-                self.field_list[row][column] = field
 
     def update_board(self, board):
         self.fields.delete("tile")
         for x in range(self.column_count):
             for y in range(self.column_count):
-                if board[x][y] is not None:
+                if board[x][y] is not "":
                     self.create_disk(x, y, board[x][y])
         self.fields.update()
 
@@ -94,30 +90,14 @@ class View(tk.Frame):
         self.current_player_label.config(text="Player: " + player)
 
     def end_game_message(self, score):
-        win = tk.Toplevel()
-        win.wm_title("Game Over")
-
-        winner = max(score, key=lambda x: score[x])
-
-        score_label = tk.Label(win, text=score)
-        winner_label = tk.Label(win)
-        score_label.pack()
-        winner_label.pack()
-
-        back_to_menu_button = tk.Button(win, text="Menu", command=win.destroy)
-        back_to_menu_button.pack()
-
-        if winner == 0:
-            winner_label.config(text="Black player won!!!")
+        score_text = "Black: " +  str(score[0]) +  "\nWhite: " + str(score[1])
+        if score[0] > score[1]:
+            score_text += "\nBlack Won !!!"
+        elif score[0] < score[1]:
+            score_text = "\nWhite Won !!!"
         else:
-            winner_label.config(text="White player won!!!")
-
-        score_label = tk.Label(win, text=score)
-        winner_label = tk.Label(win)
+            score_text = "\nDRAW"
+        messagebox.showinfo("End Game", score_text)
 
     def pass_window(self):
-        win = tk.Toplevel()
-        l = tk.Label(win, text="Pass")
-        win.wm_title("Pass")
-        l.pack()
-        win.after(1000, lambda x: win.destroy)
+        messagebox.showinfo("Pass window", "Pass")

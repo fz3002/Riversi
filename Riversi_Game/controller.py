@@ -10,6 +10,8 @@ class Controller:
     def __init__(self, model, view):
         self.board = model
         self.view = view
+        self.passed = False
+        self.end = False
 
     def validate(self, x, y):
         """Method validating moves given by user
@@ -28,7 +30,7 @@ class Controller:
         else:
             color = "white"
 
-        if board[x][y] is not None:
+        if board[x][y] != "":
             return False
 
         neighbors = self.__get_neighbors(board, x, y)
@@ -47,7 +49,7 @@ class Controller:
             current_x = neighbor_x
             current_y = neighbor_y
             while 0 <= current_x <= 7 and 0 <= current_y <= 7:
-                if board[current_x][current_y] is None:
+                if board[current_x][current_y] == "":
                     break
                 if board[current_x][current_y] == color:
                     valid = True
@@ -56,34 +58,6 @@ class Controller:
                 current_y += direction_vector[1]
 
         return valid
-
-    def handle_user_input(self, x, y):
-        """Method handling user input for given array coordinates
-
-        Arguments:
-            x -- first array coordinate
-            y -- second array coordinate
-        """
-        print("Controller")
-        if self.check_pass():
-            print("Pass")
-            self.switch_turn()
-            self.view.pass_window()
-            # TODO: Inform user of a need to pass and automatically pass
-        else:
-            print("validating")
-            if self.validate(int(x), int(y)):
-                print("moving")
-                self.board.board = self.move(int(x), int(y))
-                self.switch_turn()
-                print("board:", *self.board.board, sep="\n")
-                self.view.update_board(self.board.board)
-        if self.check_game_end():
-            # TODO: handle game end
-            score = self.get_score()
-            print(score)
-            self.view.end_game_message(score)
-            # TODO: show end score and winner
 
     def move(self, x, y):
         """Function making a move
@@ -122,7 +96,7 @@ class Controller:
             current_y = neighbor_y
             while 0 <= current_x <= 7 and 0 <= current_y <= 7:
                 line.append((current_x, current_y))
-                if work_array[current_x][current_y] is None:
+                if work_array[current_x][current_y] == "":
                     break
                 if work_array[current_x][current_y] == color:
                     for disk in line:
@@ -137,13 +111,36 @@ class Controller:
 
         return work_array
 
-    def check_game_end(self):
-        """checks if game has ended
+    def handle_user_input(self, x, y):
+        """Method handling user input for given array coordinates
 
-        Returns:
-            True if game has ended, False otherwise
+        Arguments:
+            x -- first array coordinate
+            y -- second array coordinate
         """
-        return None in self.board.board
+        print("Controller")
+        print("validating")
+        if self.validate(int(x), int(y)):
+            print("moving")
+            self.board.board = self.move(int(x), int(y))
+            self.switch_turn()
+            print("board:", *self.board.board, sep="\n")
+            self.view.update_board(self.board.board)
+
+        self.check_pass()
+        print("passed : ", self.passed)
+        if self.passed:
+            print("Pass")
+            self.switch_turn()
+            self.view.pass_window()
+            # TODO: Inform user of a need to pass and automatically pass
+
+        if self.end:
+            # TODO: handle game end
+            score = self.get_score()
+            print(score)
+            self.view.end_game_message(score)
+            # TODO: show end score and winner
 
     def get_score(self):
         """Function to get the score at the end of the game
@@ -166,12 +163,19 @@ class Controller:
         Returns:
             True if player needs to pass, False otherwise
         """
-        for row in enumerate(self.board.board):
-            for field in enumerate(row[1]):
-                if self.validate(row[0], field[0]) is True:
-                    return False
+        should_pass = True
+        valid_moves = self.__find_valid_moves()
+        print(valid_moves)
+        if valid_moves:
+            should_pass = False
 
-        return True
+        if should_pass:
+            if self.passed:
+                self.end = True
+            else:
+                self.passed = True
+        else:
+            self.passed = False
 
     def switch_turn(self):
         """Function to switch whose turn it is"""
@@ -196,6 +200,16 @@ class Controller:
         neighbors = []
         for i in range(max(0, x - 1), min(x + 2, 8)):
             for j in range(max(0, y - 1), min(y + 2, 8)):
-                if board[i][j] is not None:
+                if board[i][j] != "":
                     neighbors.append((i, j))
         return neighbors
+
+    def __find_valid_moves(self):
+        print("player: ", self.board.player)
+        valid_moves: list[tuple[int, int]] = []
+        for row in enumerate(self.board.board):
+            for field in enumerate(row[1]):
+                if self.validate(row[0], field[0]) is True:
+                    valid_moves.append((row[0], field[0]))
+
+        return valid_moves

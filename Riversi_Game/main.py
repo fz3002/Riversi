@@ -12,7 +12,7 @@ class App(tk.Tk):
 
         m = board.Board()
         v = view.View(self)
-        self.resizable(0, 0)
+        self.resizable(False, False)
         cont = controller.Controller(m, v)
         v.set_controller(cont)
 
