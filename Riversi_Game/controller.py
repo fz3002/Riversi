@@ -9,6 +9,8 @@ import json
 import os
 from types import SimpleNamespace
 
+from board import Board
+
 
 class Controller:
     """Controller class handling communications between model and view in mvc"""
@@ -22,8 +24,9 @@ class Controller:
         self.end = False
         self.scoreboard: dict[str, int]
         self.read_scores()
+        self.vs_ai = False
 
-    def validate(self, x, y):
+    def validate(self, player, x, y):
         """Method validating moves given by user
 
         Arguments:
@@ -35,7 +38,7 @@ class Controller:
         """
 
         board = self.board.board
-        if self.board.player == 0:
+        if player == 0:
             color = "black"
         else:
             color = "white"
@@ -121,6 +124,68 @@ class Controller:
 
         return work_array
 
+    def alpha_beta_min_max(
+        self, depth: int, node: list, maximizing_player, alpha, beta
+    ):
+        nodes = 1
+        boards = []
+        choices = []
+
+        if depth == 0:
+            return (self.move_score(node, maximizing_player), node)
+
+        for x in range(8):
+            for y in range(8):
+                boards.append(self.move(x, y))
+                choices.append((x, y))
+
+        if maximizing_player:
+            best = -float("inf")
+            best_board = []
+            best_choice = []
+            for board in boards:
+                score = self.alpha_beta_min_max(depth - 1, board, False, alpha, beta)[0]
+                if score > best:
+                    best = score
+                    best_board = board
+                    best_choice = choices[boards.index(board)]
+                alpha = max(alpha, best)
+                if beta <= alpha:
+                    break
+            return (best, best_board, best_choice)
+        else:
+            best = float("inf")
+            best_board = []
+            best_choice = []
+            for board in boards:
+                score = self.alpha_beta_min_max(depth - 1, board, True, alpha, beta)[0]
+                if score < best:
+                    best = score
+                    best_board = board
+                    best_choice = choices[boards.index(board)]
+                alpha = max(alpha, best)
+                if beta <= alpha:
+                    break
+            return (best, best_board, best_choice)
+
+    def move_score(self, board, maximizingPlayer):
+        score = 0
+
+        if maximizingPlayer == 0:
+            player = "black"
+            enemy = "white"
+        else:
+            player = "white"
+            enemy = "black"
+
+        for row in enumerate(self.board.board):
+            for field in enumerate(row[1]):
+                if board[row[0]][field[0]] == player:
+                    score += 1
+                elif board[row[0]][field[0]] == enemy:
+                    score -= 1
+        return score
+
     def handle_user_input(self, x, y):
         """Method handling user input for given array coordinates
 
@@ -130,16 +195,21 @@ class Controller:
         """
         print("Controller")
         print("validating")
-        if self.validate(int(x), int(y)):
+        if self.validate(self.board.player, int(x), int(y)):
             print("moving")
             self.board.board = self.move(int(x), int(y))
             self.switch_turn()
             print("board:", *self.board.board, sep="\n")
             self.view.update_board(self.board.board)
-
+        if self.vs_ai:
+            ai_move_result = self.alpha_beta_min_max(
+                4, self.board.board, 1, -float("inf"), float("inf")
+            )
+            self.board.board = ai_move_result[1]
         self.check_pass()
         self.check_if_board_is_full()
         print("passed : ", self.passed)
+
         if self.passed:
             print("Pass")
             self.switch_turn()
@@ -239,7 +309,7 @@ class Controller:
                 self.scoreboard = json.loads(f.readline())
         else:
             self.scoreboard = {}
-            
+
         self.leaderboard.populate_leaderboard(self.scoreboard)
 
     def add_to_scoreboard(self, score, nickname_black, nickname_white):
@@ -253,6 +323,25 @@ class Controller:
             self.scoreboard[nickname_white] += score[1]
         self.leaderboard.populate_leaderboard(self.scoreboard)
 
+    def new_game(self):
+        self.board = Board()
+        self.vs_ai = False
+        self.view.update_board(self.board.board)
+        if self.board.player == 0:
+            self.view.set_current_player_label("black")
+        else:
+            self.view.set_current_player_label("white")
+            
+            
+    def new_game_vs_ai(self):
+        self.board = Board()
+        self.vs_ai = True
+        self.view.update_board(self.board.board)
+        if self.board.player == 0:
+            self.view.set_current_player_label("black")
+        else:
+            self.view.set_current_player_label("white")
+    
     def __generate_save_file_name(self) -> str:
         now = datetime.datetime.now()
         date_str = now.strftime("%Y-%m-%d_%H-%M-%S")
@@ -281,7 +370,7 @@ class Controller:
         valid_moves: list[tuple[int, int]] = []
         for row in enumerate(self.board.board):
             for field in enumerate(row[1]):
-                if self.validate(row[0], field[0]) is True:
+                if self.validate(self.board.player, row[0], field[0]) is True:
                     valid_moves.append((row[0], field[0]))
 
         return valid_moves

@@ -165,10 +165,24 @@ class Menu(tk.Frame):
             pady=10,
         )
         self.label.pack()
-        self.button_play = tk.Button(
+        self.button_continue = tk.Button(
             self,
-            text="Play",
+            text="Continue",
             command=self.root.show_game,
+            bg="#026e00",
+            fg="#ffe200",
+            activebackground="#015400",
+            activeforeground="#ffe200",
+            height=2,
+            width=20,
+            font=("BigBlueTerm437 Nerd Font", 20),
+            pady=5,
+            state="disabled"
+        )
+        self.button_new_game = tk.Button(
+            self,
+            text="New Game",
+            command=self.new_game_button_action,
             bg="#026e00",
             fg="#ffe200",
             activebackground="#015400",
@@ -180,8 +194,8 @@ class Menu(tk.Frame):
         )
         self.button_play_vs_ai = tk.Button(
             self,
-            text="Play vs AI",
-            command=self.root.show_game,
+            text="New Game vs AI",
+            command=self.new_game_vs_ai_button_action,
             bg="#026e00",
             fg="#ffe200",
             activebackground="#015400",
@@ -243,7 +257,8 @@ class Menu(tk.Frame):
             font=("BigBlueTerm437 Nerd Font", 20),
             pady=5,
         )
-        self.button_play.pack()
+        self.button_continue.pack()
+        self.button_new_game.pack()
         self.button_play_vs_ai.pack()
         self.button_save.pack()
         self.button_load.pack()
@@ -261,7 +276,17 @@ class Menu(tk.Frame):
             defaultextension="txt", initialdir="Saves"
         )
         self.controller.load_form_file(filepath)
+        self.button_continue["state"] = "normal"
 
+    def new_game_button_action(self):
+        self.button_continue["state"] = "normal"
+        self.controller.new_game()
+        self.root.show_game()
+        
+    def new_game_vs_ai_button_action(self):
+        self.button_continue["state"] = "normal"
+        self.controller.new_game_vs_ai()
+        self.root.show_game()
 
 class Leaderboard(tk.Frame):
     def __init__(self, parent):
