@@ -9,6 +9,8 @@ import json
 import os
 from types import SimpleNamespace
 
+from attr import validate
+
 from board import Board
 
 
@@ -136,8 +138,9 @@ class Controller:
 
         for x in range(8):
             for y in range(8):
-                boards.append(self.move(x, y))
-                choices.append((x, y))
+                if self.validate(maximizing_player, x, y):
+                    boards.append(self.move(x, y))
+                    choices.append((x, y))
 
         if maximizing_player:
             best = -float("inf")
@@ -201,11 +204,14 @@ class Controller:
             self.switch_turn()
             print("board:", *self.board.board, sep="\n")
             self.view.update_board(self.board.board)
-        if self.vs_ai:
-            ai_move_result = self.alpha_beta_min_max(
-                4, self.board.board, 1, -float("inf"), float("inf")
-            )
-            self.board.board = ai_move_result[1]
+            if self.vs_ai:
+                ai_move_result = self.alpha_beta_min_max(
+                    3, self.board.board, 1, -float("inf"), float("inf")
+                )
+                self.board.board = ai_move_result[1]
+                self.view.update_board(self.board.board)
+                print(self.board.board)
+                self.switch_turn()
         self.check_pass()
         self.check_if_board_is_full()
         print("passed : ", self.passed)
@@ -272,10 +278,12 @@ class Controller:
         """Function to switch whose turn it is"""
         if self.board.player == 0:
             self.board.player = 1
-            self.view.set_current_player_label("white")
+            if not self.vs_ai:
+                self.view.set_current_player_label("white")
         else:
             self.board.player = 0
-            self.view.set_current_player_label("black")
+            if not self.vs_ai:
+                self.view.set_current_player_label("black")
 
     def save_to_file(self):
         filename = self.__generate_save_file_name()
