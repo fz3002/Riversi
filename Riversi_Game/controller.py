@@ -164,7 +164,7 @@ class Controller:
                     best = score
                     best_board = board
                     best_choice = choices[boards.index(board)]
-                alpha = max(alpha, best)
+                beta = min(beta, best)
                 if beta <= alpha:
                     break
             return (best, best_board, best_choice)
