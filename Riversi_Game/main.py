@@ -9,7 +9,6 @@ class App(tk.Tk):
     def __init__(self):
         super().__init__()
 
-        self.wm_geometry("600x600")
         self.title("Riversi Game")
         self.m = board.Board()
         self.v = view.Game(self)
