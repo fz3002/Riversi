@@ -1,16 +1,14 @@
 """Module containing controller class handling view and model/s
 """
 
-# TODO: AI
+# TODO: Documentation
+# TODO: Exception
 
 import copy
 import datetime
 import json
 import os
 from types import SimpleNamespace
-
-from attr import validate
-
 from board import Board
 
 
@@ -205,7 +203,7 @@ class Controller:
             self.switch_turn()
             print("board:", *self.board.board, sep="\n")
             if self.board.ai:
-                ai_move_result:tuple = self.alpha_beta_min_max(
+                ai_move_result: tuple = self.alpha_beta_min_max(
                     3, self.board.board, 1, -float("inf"), float("inf")
                 )
                 self.board.board = ai_move_result[1]
@@ -342,8 +340,7 @@ class Controller:
             self.view.set_current_player_label("black")
         else:
             self.view.set_current_player_label("white")
-            
-            
+
     def new_game_vs_ai(self):
         self.board = Board()
         self.board.ai = True
@@ -352,7 +349,7 @@ class Controller:
             self.view.set_current_player_label("black")
         else:
             self.view.set_current_player_label("white")
-    
+
     def __generate_save_file_name(self) -> str:
         now = datetime.datetime.now()
         date_str = now.strftime("%Y-%m-%d_%H-%M-%S")
