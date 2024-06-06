@@ -1,5 +1,8 @@
 """Module containing controller class handling view and model/s
 """
+#TODO: AI
+#TODO: Save to file
+#TODO: Read board state from save file
 
 import copy
 
@@ -128,19 +131,17 @@ class Controller:
             self.view.update_board(self.board.board)
 
         self.check_pass()
+        self.check_if_board_is_full()
         print("passed : ", self.passed)
         if self.passed:
             print("Pass")
             self.switch_turn()
             self.view.pass_window()
-            # TODO: Inform user of a need to pass and automatically pass
 
         if self.end:
-            # TODO: handle game end
             score = self.get_score()
             print(score)
             self.view.end_game_message(score)
-            # TODO: show end score and winner
 
     def get_score(self):
         """Function to get the score at the end of the game
@@ -176,6 +177,17 @@ class Controller:
                 self.passed = True
         else:
             self.passed = False
+
+    def check_if_board_is_full(self):
+        is_board_full: bool = True
+        for row in enumerate(self.board.board):
+            for field in enumerate(row[1]):
+                if field[1] == '':
+                    is_board_full =  False
+                    break
+
+        if is_board_full:
+            self.end = True
 
     def switch_turn(self):
         """Function to switch whose turn it is"""
