@@ -2,6 +2,7 @@ import json
 
 class Board:
     def __init__(self):
+        self.ai = False
         self.player = 0
         self.passed = 0
         self.won = False
@@ -13,3 +14,9 @@ class Board:
         
     def __repr__(self) -> str:
         return json.dumps(self.__dict__)
+
+    def get_player_color(self):
+        if self.player == 0:
+            return "black"
+        else:
+            return "white"

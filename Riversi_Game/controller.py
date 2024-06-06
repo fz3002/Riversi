@@ -26,7 +26,6 @@ class Controller:
         self.end = False
         self.scoreboard: dict[str, int]
         self.read_scores()
-        self.vs_ai = False
 
     def validate(self, player, x, y):
         """Method validating moves given by user
@@ -128,7 +127,7 @@ class Controller:
 
     def alpha_beta_min_max(
         self, depth: int, node: list, maximizing_player, alpha, beta
-    ):
+    ) -> tuple:
         nodes = 1
         boards = []
         choices = []
@@ -201,14 +200,18 @@ class Controller:
         if self.validate(self.board.player, int(x), int(y)):
             print("moving")
             self.board.board = self.move(int(x), int(y))
+            self.view.draw_played_disk(int(x), int(y), self.board.get_player_color())
+            self.view.update_board(self.board.board)
             self.switch_turn()
             print("board:", *self.board.board, sep="\n")
-            self.view.update_board(self.board.board)
-            if self.vs_ai:
-                ai_move_result = self.alpha_beta_min_max(
+            if self.board.ai:
+                ai_move_result:tuple = self.alpha_beta_min_max(
                     3, self.board.board, 1, -float("inf"), float("inf")
                 )
                 self.board.board = ai_move_result[1]
+                x_ai = ai_move_result[2][0]
+                y_ai = ai_move_result[2][1]
+                self.view.draw_played_disk(x_ai, y_ai, self.board.get_player_color())
                 self.view.update_board(self.board.board)
                 print(self.board.board)
                 self.switch_turn()
@@ -278,11 +281,11 @@ class Controller:
         """Function to switch whose turn it is"""
         if self.board.player == 0:
             self.board.player = 1
-            if not self.vs_ai:
+            if not self.board.ai:
                 self.view.set_current_player_label("white")
         else:
             self.board.player = 0
-            if not self.vs_ai:
+            if not self.board.ai:
                 self.view.set_current_player_label("black")
 
     def save_to_file(self):
@@ -333,7 +336,7 @@ class Controller:
 
     def new_game(self):
         self.board = Board()
-        self.vs_ai = False
+        self.board.ai = False
         self.view.update_board(self.board.board)
         if self.board.player == 0:
             self.view.set_current_player_label("black")
@@ -343,7 +346,7 @@ class Controller:
             
     def new_game_vs_ai(self):
         self.board = Board()
-        self.vs_ai = True
+        self.board.ai = True
         self.view.update_board(self.board.board)
         if self.board.player == 0:
             self.view.set_current_player_label("black")

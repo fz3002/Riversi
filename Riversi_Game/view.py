@@ -1,3 +1,4 @@
+import time
 import tkinter as tk
 from tkinter import Scrollbar, messagebox
 from controller import Controller
@@ -74,6 +75,12 @@ class Game(tk.Frame):
                     outline="black",
                 )
 
+    def draw_played_disk(self, x, y, color):
+        
+        self.create_disk(x, y, color)
+        self.fields.update()
+        time.sleep(0.5)
+    
     def update_board(self, board):
         self.fields.delete("tile")
         for x in range(self.column_count):
