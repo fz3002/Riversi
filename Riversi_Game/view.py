@@ -188,10 +188,15 @@ class Game(tk.Frame):
             score_text = "\nDRAW"
         messagebox.showinfo("End Game", score_text)
 
-    def pass_window(self):
+    def pass_window(self, player_passed = False):
         """Show popup message informing user of passing
+
+        Args:
+            player (bool): if player or ai passed in ai game
         """
         messagebox.showinfo("Pass window", "Pass")
+        if player_passed:
+            self.controller.ai_move()
 
     def leaderboard_window(self) -> tuple:
         #TODO: don't ask for nickname of white if playing vs ai
@@ -206,20 +211,22 @@ class Game(tk.Frame):
             message="BlackPlayer | Do you want to add your score to leaderboard",
             type=messagebox.YESNO,
         )
-        if choice:
+        if choice == "yes":
             nickname_black = simpledialog.askstring(
                 "Nickname", "Enter Nickname: ", parent=self
             )
-        choice = messagebox.askquestion(
-            title="LeaderBoard",
-            message="WhitePlayer | Do you want to add your score to leaderboard",
-            type=messagebox.YESNO,
-        )
-        if choice:
-            nickname_white = simpledialog.askstring(
-                "Nickname", "Enter Nickname: ", parent=self
+        else: nickname_black = "null"
+        nickname_white = "null"
+        if not self.controller.is_game_vs_ai():
+            choice = messagebox.askquestion(
+                title="LeaderBoard",
+                message="WhitePlayer | Do you want to add your score to leaderboard",
+                type=messagebox.YESNO,
             )
-
+            if choice == "yes":
+                nickname_white = simpledialog.askstring(
+                    "Nickname", "Enter Nickname: ", parent=self
+                )
         return (nickname_black, nickname_white)
 
 

@@ -45,6 +45,9 @@ class Controller:
 
         if board[x][y] != "":
             return False
+        
+        if x < 0 and y < 0 and x > 7 and y > 7:
+            return False
 
         neighbors = self.__get_neighbors(board, x, y)
 
@@ -224,7 +227,8 @@ class Controller:
         print("Controller")
         print("validating")
 
-        if self.validate(self.board.player, int(x), int(y)) and (not self.board.ai or (self.board.ai and self.board.player == 1)
+        if self.validate(self.board.player, int(x), int(y)) and (
+            not self.board.ai or (self.board.ai and self.board.player == 0)
         ):
             print("moving")
             self.board.board = self.move(int(x), int(y))
@@ -238,7 +242,8 @@ class Controller:
             if self.passed:
                 print("1. " + self.board.get_player_color() + "Pass")
                 self.switch_turn()
-                self.view.pass_window()
+                if not self.end:
+                    self.view.pass_window()
 
             if self.end:
                 score = self.get_score()
@@ -253,34 +258,39 @@ class Controller:
             print("board:", *self.board.board, sep="\n")
 
         if self.board.ai and self.board.player == 1:
-            ai_move_result: tuple = self.alpha_beta_min_max(
+            self.ai_move()
+
+    def ai_move(self):
+        """Computer move"""
+        ai_move_result: tuple = self.alpha_beta_min_max(
                 3, self.board.board, 1, -float("inf"), float("inf")
             )
-            self.board.board = ai_move_result[1]
-            if len(ai_move_result) == 3:
-                x_ai = ai_move_result[2][0]
-                y_ai = ai_move_result[2][1]
-                self.view.draw_played_disk(x_ai, y_ai, self.board.get_player_color())
-            self.view.update_board(self.board.board)
-            print(self.board.board)
+        self.board.board = ai_move_result[1]
+        if len(ai_move_result) == 3:
+            x_ai = ai_move_result[2][0]
+            y_ai = ai_move_result[2][1]
+            self.view.draw_played_disk(x_ai, y_ai, self.board.get_player_color())
+        self.view.update_board(self.board.board)
+        print(self.board.board)
+        self.switch_turn()
+        self.check_pass()
+        self.check_if_board_is_full()
+        print("passed : ", self.passed)
+
+        if self.passed:
+            print("2." + self.board.get_player_color() + "Pass")
             self.switch_turn()
-            self.check_pass()
-            self.check_if_board_is_full()
-            print("passed : ", self.passed)
+            if not self.end:
+                self.view.pass_window(True)
 
-            if self.passed:
-                print("2." + self.board.get_player_color() + "Pass")
-                self.switch_turn()
-                self.view.pass_window()
-
-            if self.end:
-                score = self.get_score()
-                self.view.end_game_message(score)
-                (nickname_black, nickname_white) = self.view.leaderboard_window()
-                self.add_to_scoreboard(score, nickname_black, nickname_white)
-                self.save_scores()
-                self.end = False
-                self.passed = False
+        if self.end:
+            score = self.get_score()
+            self.view.end_game_message(score)
+            (nickname_black, nickname_white) = self.view.leaderboard_window()
+            self.add_to_scoreboard(score, nickname_black, nickname_white)
+            self.save_scores()
+            self.end = False
+            self.passed = False
 
     def get_score(self) -> dict:
         """Function to get the score at the end of the game
@@ -390,11 +400,11 @@ class Controller:
             nickname_black (str): nickname given by black player
             nickname_white (str): nickname given by white player
         """
-        if nickname_black not in self.scoreboard.keys():
+        if nickname_black not in self.scoreboard.keys() and nickname_black != "null":
             self.scoreboard[nickname_black] = score[0]
         else:
             self.scoreboard[nickname_black] += score[0]
-        if nickname_white not in self.scoreboard.keys():
+        if nickname_white not in self.scoreboard.keys() and nickname_white != "null":
             self.scoreboard[nickname_white] = score[1]
         else:
             self.scoreboard[nickname_white] += score[1]
@@ -419,6 +429,9 @@ class Controller:
             self.view.set_current_player_label("black")
         else:
             self.view.set_current_player_label("white")
+
+    def is_game_vs_ai(self):
+        return self.board.ai
 
     def __generate_save_file_name(self) -> str:
         """Generates game save file name
