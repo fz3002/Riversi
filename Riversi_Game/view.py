@@ -190,18 +190,13 @@ class Game(tk.Frame):
             score_text = "\nDRAW"
         messagebox.showinfo("End Game", score_text)
 
-    def pass_window(self, player_passed=False):
+    def pass_window(self):
         """Show popup message informing user of passing
 
         Args:
             player (bool): if player or ai passed in ai game
         """
         messagebox.showinfo("Pass window", "Pass")
-        if player_passed:
-            self.controller.check_pass()
-            self.controller.check_if_board_is_full()
-            self.controller.handle_pass()
-            self.controller.ai_move()
 
     def leaderboard_window(self) -> tuple:
         """Ask user for nicknames of players

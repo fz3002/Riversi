@@ -231,20 +231,22 @@ class Controller:
         if self.validate(self.board.player, int(x), int(y)) and (
             not self.board.ai or (self.board.ai and self.board.player == 0)
         ):
-            print("moving")
+            print("Player move")
             self.board.board = self.move(int(x), int(y))
             self.view.draw_played_disk(int(x), int(y), self.board.get_player_color())
             self.view.update_board(self.board.board)
             self.switch_turn()
-            self.check_pass()
-            self.check_if_board_is_full()
-            print("passed : ", self.passed)
+        
+        self.check_pass()
+        self.check_if_board_is_full()
+        print("passed : ", self.passed)
 
-            self.handle_pass()
+        self.handle_pass()
 
-            print("board:", *self.board.board, sep="\n")
+        print("board:", *self.board.board, sep="\n")
 
         if self.board.ai and self.board.player == 1:
+            print("Computer move")
             self.ai_move()
 
     def handle_pass(self):
@@ -255,7 +257,6 @@ class Controller:
                 self.view.pass_window()
 
         if self.end:
-            # TODO: block user after end game
             score = self.get_score()
             self.view.end_game_message(score)
             (nickname_black, nickname_white) = self.view.leaderboard_window()
@@ -263,6 +264,10 @@ class Controller:
             self.save_scores()
             self.end = False
             self.passed = False
+            self.menu.button_continue["state"] = "disabled"
+            self.board = Board()
+            self.view.update_board(self.board.board)
+            self.menu.root.show_menu()
 
     def ai_move(self):
         """Computer move"""
