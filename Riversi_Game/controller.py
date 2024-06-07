@@ -127,12 +127,26 @@ class Controller:
     def alpha_beta_min_max(
         self, depth: int, node: list, maximizing_player, alpha, beta
     ) -> tuple:
-        nodes = 1
+        """min max function using alpha beta pruning to find best move for ai
+
+        Arguments:
+            depth -- depth of the decision tree
+            node -- starting board state
+            maximizing_player -- True(or 1) if player is wants move with highest score
+                                    else with the lowest (usually white player is maximizing)
+            alpha -- minimum score maximizing player is assured of
+            beta -- maximum score minimizing player is assured of
+
+        Returns:
+            Depending on depth of current recursion depth returns a tuple 
+            with score and board state with the best score,
+            and when we are not considering leafs of the tree coordinates of move made.
+        """
         boards = []
         choices = []
 
         if depth == 0:
-            return (self.move_score(node, maximizing_player), node)
+            return (self.__move_score(node, maximizing_player), node)
 
         for x in range(8):
             for y in range(8):
@@ -169,10 +183,21 @@ class Controller:
                     break
             return (best, best_board, best_choice)
 
-    def move_score(self, board, maximizingPlayer):
+    def __move_score(self, board, maximizing_player):
+        """Simple algorithm evaluating score of given board state 
+        for maximizing or minimizing player
+
+        Arguments:
+            board -- array representing board state after move
+            maximizingPlayer -- True(or 1) if player is wants move with highest score
+                                    else with the lowest (usually white player is maximizing)
+
+        Returns:
+            Score of given board state
+        """
         score = 0
 
-        if maximizingPlayer == 0:
+        if maximizing_player == 0:
             player = "black"
             enemy = "white"
         else:
@@ -266,6 +291,7 @@ class Controller:
             self.passed = False
 
     def check_if_board_is_full(self):
+        """Function ending game if board is full"""
         is_board_full: bool = True
         for row in enumerate(self.board.board):
             for field in enumerate(row[1]):
@@ -288,6 +314,7 @@ class Controller:
                 self.view.set_current_player_label("black")
 
     def save_to_file(self):
+        """Function current game state to file"""
         filename = self.__generate_save_file_name()
         save_dir = "Saves"
 
@@ -300,6 +327,11 @@ class Controller:
             f.write(repr(self.board))
 
     def load_form_file(self, filepath):
+        """Function loading game state from file
+
+        Arguments:
+            filepath -- file path taken from user
+        """
         with open(filepath, "r", encoding="UTF-8") as f:
             read_json = f.readline()
             self.board = json.loads(
@@ -309,11 +341,13 @@ class Controller:
         self.view.update_board(self.board.board)
 
     def save_scores(self):
+        """Function saving scoreboard to file"""
         with open("scoreboard.txt", "w", encoding="UTF-8") as f:
 
             f.write(json.dumps(self.scoreboard))
 
     def read_scores(self):
+        """Function reading scores from file"""
         if os.path.exists("scoreboard.txt"):
             with open("scoreboard.txt", "r", encoding="UTF-8") as f:
                 self.scoreboard = json.loads(f.readline())
@@ -323,6 +357,14 @@ class Controller:
         self.leaderboard.populate_leaderboard(self.scoreboard)
 
     def add_to_scoreboard(self, score, nickname_black, nickname_white):
+        """Function adding score to scoreboard
+
+        Arguments:
+            score -- dictionary of scores gotten from get score function 
+                    with players as keys and scores of played game as values
+            nickname_black -- nickname given by black player
+            nickname_white -- nickname given by white player
+        """
         if nickname_black not in self.scoreboard.keys():
             self.scoreboard[nickname_black] = score[0]
         else:
@@ -334,6 +376,7 @@ class Controller:
         self.leaderboard.populate_leaderboard(self.scoreboard)
 
     def new_game(self):
+        """Function starting new game with clean board"""
         self.board = Board()
         self.board.ai = False
         self.view.update_board(self.board.board)
@@ -343,6 +386,7 @@ class Controller:
             self.view.set_current_player_label("white")
 
     def new_game_vs_ai(self):
+        """Function starting new game vs ai"""
         self.board = Board()
         self.board.ai = True
         self.view.update_board(self.board.board)
@@ -352,6 +396,11 @@ class Controller:
             self.view.set_current_player_label("white")
 
     def __generate_save_file_name(self) -> str:
+        """Generates game save file name
+
+        Returns:
+            File name as save+{current date}
+        """
         now = datetime.datetime.now()
         date_str = now.strftime("%Y-%m-%d_%H-%M-%S")
         return f"save_{date_str}.txt"
@@ -375,6 +424,11 @@ class Controller:
         return neighbors
 
     def __find_valid_moves(self):
+        """Function finding all valid moves on the board
+
+        Returns:
+            List of tuples with coordinates of valid moves
+        """
         print("player: ", self.board.player)
         valid_moves: list[tuple[int, int]] = []
         for row in enumerate(self.board.board):

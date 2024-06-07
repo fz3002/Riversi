@@ -1,7 +1,9 @@
+"""Module containing data models for the app"""
 import json
 
 
 class Board:
+    """Class representing game board"""
     def __init__(self):
         self.ai = False
         self.player = 0
@@ -17,6 +19,11 @@ class Board:
         return json.dumps(self.__dict__)
 
     def get_player_color(self):
+        """Function to get current player's color
+
+        Returns:
+            black is player 0 and white is player 1
+        """
         if self.player == 0:
             return "black"
         else:

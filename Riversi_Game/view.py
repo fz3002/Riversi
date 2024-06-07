@@ -1,12 +1,15 @@
+"""Module containing views for application"""
+from tkinter import filedialog
+from tkinter import simpledialog
 import time
 import tkinter as tk
 from tkinter import Scrollbar, messagebox
 from controller import Controller
-from tkinter import filedialog
-from tkinter import simpledialog
+
 
 
 class Game(tk.Frame):
+    """Class representing game windows"""
     def __init__(self, parent, board_size=400, column_count=8):
         self.root = parent
         super().__init__(
@@ -59,13 +62,16 @@ class Game(tk.Frame):
         self.fields.bind("<Button-1>", self.mouse_click_handler)
         self.create_start_disks()
 
-    def show(self):
-        self.lift()
+    def set_controller(self, controller: Controller):
+        """Controller setter
 
-    def set_controller(self, controller):
+        Arguments:
+            controller -- instance of Controller
+        """
         self.controller = controller
 
     def draw_board(self):
+        """Function drawing initial board"""
         for row in range(self.column_count):
             for column in range(self.column_count):
                 self.fields.create_rectangle(
@@ -78,12 +84,23 @@ class Game(tk.Frame):
                 )
 
     def draw_played_disk(self, x, y, color):
+        """Function draws played disk before updating whole board
 
+        Args:
+            x (int): first disk coordinate
+            y (int): second disk coordinate
+            color (string): disk color
+        """
         self.create_disk(x, y, color)
         self.fields.update()
         time.sleep(0.5)
 
     def update_board(self, board):
+        """Function updating whole board with flipped disk
+
+        Args:
+            board (list[list[string]]): Board state to be reflected in ui
+        """
         self.fields.delete("tile")
         for x in range(self.column_count):
             for y in range(self.column_count):
@@ -92,10 +109,23 @@ class Game(tk.Frame):
         self.fields.update()
 
     def mouse_click_handler(self, event):
+        """Function handling mouse click
+
+        Args:
+            event (event): mouse event
+        """
         (x, y) = self.get_field_coordinates_after_mouse_click(event)
         self.controller.handle_user_input(x, y)
 
     def get_field_coordinates_after_mouse_click(self, event):
+        """Function translating mouse position to board coordinates
+
+        Args:
+            event (event): mouse click event
+
+        Returns:
+            tuple(float, float): mouse click coordinates on board
+        """
         col = event.y // self.field_size
         row = event.x // self.field_size
         print(col, row)

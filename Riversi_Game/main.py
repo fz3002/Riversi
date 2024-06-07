@@ -1,10 +1,17 @@
+"""Main driving module of the application"""
+import tkinter as tk
 import controller
 import board
 import view
-import tkinter as tk
+
 
 
 class App(tk.Tk):
+    """Main driving class of the application
+
+    Arguments:
+        tk -- extended class
+    """
     def __init__(self):
         super().__init__()
 
@@ -20,16 +27,19 @@ class App(tk.Tk):
         self.menu.set_controller(self.cont)
 
     def show_game(self):
+        """Function hiding all windows apart from game window"""
         self.menu.pack_forget()
         self.leaderboard.pack_forget()
         self.v.pack(expand=True, fill="both")
 
     def show_menu(self):
+        """Function hiding all windows apart from menu window"""
         self.v.pack_forget()
         self.leaderboard.pack_forget()
         self.menu.pack(expand=True, fill="both")
 
     def show_leaderboard(self):
+        """Function hiding all windows apart from leaderboard window"""
         self.menu.pack_forget()
         self.v.pack_forget()
         self.leaderboard.pack(expand=True, fill="both")
