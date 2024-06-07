@@ -1,8 +1,6 @@
 """Module containing controller class handling view and model/s
 """
 
-# TODO: Cleanup
-
 import copy
 import datetime
 import json
