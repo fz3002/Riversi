@@ -23,6 +23,7 @@ class Controller:
         self.passed = False
         self.end = False
         self.scoreboard: dict[str, int]
+
         self.read_scores()
 
     def validate(self, player, x, y) -> bool:
@@ -38,6 +39,7 @@ class Controller:
         """
 
         board = self.board.board
+
         if player == 0:
             color = "black"
         else:
@@ -45,7 +47,7 @@ class Controller:
 
         if board[x][y] != "":
             return False
-        
+
         if x < 0 and y < 0 and x > 7 and y > 7:
             return False
 
@@ -53,7 +55,9 @@ class Controller:
 
         if not neighbors:
             return False
+
         valid = False
+
         for neighbor in neighbors:
             neighbor_x = neighbor[0]
             neighbor_y = neighbor[1]
@@ -64,12 +68,14 @@ class Controller:
             direction_vector = (neighbor_x - x, neighbor_y - y)
             current_x = neighbor_x
             current_y = neighbor_y
+
             while 0 <= current_x <= 7 and 0 <= current_y <= 7:
                 if board[current_x][current_y] == "":
                     break
                 if board[current_x][current_y] == color:
                     valid = True
                     break
+
                 current_x += direction_vector[0]
                 current_y += direction_vector[1]
 
@@ -86,35 +92,38 @@ class Controller:
             list(list(str)): board after move
         """
 
-        board = self.board.board
-        if self.board.player == 0:
-            color = "black"
-        else:
-            color = "white"
+        # Determine color of player
+        color = self.board.get_player_color()
 
-        work_array = copy.deepcopy(board)
-        work_array[x][y] = color
-        neighbors = self.__get_neighbors(board, x, y)
+        work_board = copy.deepcopy(self.board.board)
+        work_board[x][y] = color
+        neighbors = self.__get_neighbors(work_board, x, y)
 
         disk_to_convert = []
 
+        # loop checking every found neighbor for line to convert
         for neighbor in neighbors:
             line = []
 
             neighbor_x = neighbor[0]
             neighbor_y = neighbor[1]
 
-            if work_array[neighbor_x][neighbor_y] == color:
+            if work_board[neighbor_x][neighbor_y] == color:
                 continue
 
-            direction_vector = (neighbor_x - x, neighbor_y - y)
+            direction_vector = (
+                neighbor_x - x,
+                neighbor_y - y,
+            )  # vector in which way the line will go
+
             current_x = neighbor_x
             current_y = neighbor_y
+
             while 0 <= current_x <= 7 and 0 <= current_y <= 7:
                 line.append((current_x, current_y))
-                if work_array[current_x][current_y] == "":
+                if work_board[current_x][current_y] == "":
                     break
-                if work_array[current_x][current_y] == color:
+                if work_board[current_x][current_y] == color:
                     for disk in line:
                         disk_to_convert.append(disk)
                     break
@@ -122,10 +131,11 @@ class Controller:
                 current_x += direction_vector[0]
                 current_y += direction_vector[1]
 
+        # convert disk to new colors
         for disk in disk_to_convert:
-            work_array[disk[0]][disk[1]] = color
+            work_board[disk[0]][disk[1]] = color
 
-        return work_array
+        return work_board
 
     def alpha_beta_min_max(
         self, depth: int, node: list, maximizing_player, alpha, beta
@@ -150,12 +160,14 @@ class Controller:
         boards = []
         choices = []
 
+        # get every possible state from current board/node
         for x in range(8):
             for y in range(8):
                 if self.validate(maximizing_player, x, y):
                     boards.append(self.move(x, y))
                     choices.append((x, y))
 
+        # Condition to break recursion
         if depth == 0 or len(choices) == 0:
             return (self.__move_score(node, maximizing_player), node)
 
@@ -173,20 +185,20 @@ class Controller:
                 if beta <= alpha:
                     break
             return (best, best_board, best_choice)
-        else:
-            best = float("inf")
-            best_board = []
-            best_choice = []
-            for board in boards:
-                score = self.alpha_beta_min_max(depth - 1, board, True, alpha, beta)[0]
-                if score < best:
-                    best = score
-                    best_board = board
-                    best_choice = choices[boards.index(board)]
-                beta = min(beta, best)
-                if beta <= alpha:
-                    break
-            return (best, best_board, best_choice)
+
+        best = float("inf")
+        best_board = []
+        best_choice = []
+        for board in boards:
+            score = self.alpha_beta_min_max(depth - 1, board, True, alpha, beta)[0]
+            if score < best:
+                best = score
+                best_board = board
+                best_choice = choices[boards.index(board)]
+            beta = min(beta, best)
+            if beta <= alpha:
+                break
+        return (best, best_board, best_choice)
 
     def __move_score(self, board, maximizing_player) -> int:
         """Simple algorithm evaluating score of given board state
@@ -218,46 +230,40 @@ class Controller:
         return score
 
     def handle_user_input(self, x, y):
-        #TODO: Fix Passes
         """Method handling user input for given array coordinates
 
         Args:
             x (float): first array coordinate
             y (float): second array coordinate
         """
-        print("Controller")
-        print("validating")
 
         if self.validate(self.board.player, int(x), int(y)) and (
             not self.board.ai or (self.board.ai and self.board.player == 0)
         ):
-            print("Player move")
             self.board.board = self.move(int(x), int(y))
             self.view.draw_played_disk(int(x), int(y), self.board.get_player_color())
             self.view.update_board(self.board.board)
             self.switch_turn()
-        
-        #Check if next player needs to pass
-        while(True):
+
+        # Loop for ai to continue making moves if player needs to pass without player clicking mouse
+        while True:
+            # Check if next player needs to pass
             self.check_pass()
             self.check_if_board_is_full()
-            print("passed : ", self.passed)
 
             self.handle_pass()
 
-            print("board:", *self.board.board, sep="\n")
-
             if self.board.ai and self.board.player == 1:
-                print("Computer move")
+
                 self.ai_move()
+
                 self.check_pass()
                 self.check_if_board_is_full()
-                print("passed : ", self.passed)
                 self.handle_pass()
                 if not self.passed:
                     break
-            else :
-                break #when ai needs to pass or not ai            
+            else:
+                break  # when ai needs to pass or not ai
 
     def handle_pass(self):
         """Handle pass and end"""
@@ -269,9 +275,12 @@ class Controller:
         if self.end:
             score = self.get_score()
             self.view.end_game_message(score)
+
             (nickname_black, nickname_white) = self.view.leaderboard_window()
             self.add_to_scoreboard(score, nickname_black, nickname_white)
             self.save_scores()
+
+            # clearing board after game ends
             self.end = False
             self.passed = False
             self.menu.button_continue["state"] = "disabled"
@@ -282,15 +291,15 @@ class Controller:
     def ai_move(self):
         """Computer move"""
         ai_move_result: tuple = self.alpha_beta_min_max(
-                3, self.board.board, 1, -float("inf"), float("inf")
-            )
+            3, self.board.board, 1, -float("inf"), float("inf")
+        )
         self.board.board = ai_move_result[1]
         if len(ai_move_result) == 3:
             x_ai = ai_move_result[2][0]
             y_ai = ai_move_result[2][1]
             self.view.draw_played_disk(x_ai, y_ai, self.board.get_player_color())
+
         self.view.update_board(self.board.board)
-        print(self.board.board)
         self.switch_turn()
 
     def get_score(self) -> dict:
@@ -312,7 +321,6 @@ class Controller:
         """Checks if player needs to pass as there is no valid move to be made"""
         should_pass = True
         valid_moves = self.__find_valid_moves()
-        print(valid_moves)
         if valid_moves:
             should_pass = False
 
@@ -477,7 +485,6 @@ class Controller:
         Returns:
             list: List of tuples with coordinates of valid moves
         """
-        print("player: ", self.board.player)
         valid_moves: list[tuple[int, int]] = []
         for row in enumerate(self.board.board):
             for field in enumerate(row[1]):
@@ -487,6 +494,14 @@ class Controller:
         return valid_moves
 
     def __validate_data(self, data) -> bool:
+        """Validate if data in save file conforms to json save format
+
+        Args:
+            data (json_data): json data read of file
+
+        Returns:
+            bool: True if data in save file conforms to json save format
+        """
         required_keys = {
             "ai": bool,
             "player": int,
@@ -495,12 +510,10 @@ class Controller:
             "board": list,
         }
 
-        # Check if all required keys are present and have correct type
         for key, value_type in required_keys.items():
             if key not in data or not isinstance(data[key], value_type):
                 return False
 
-        # Check if board is a list of 8 lists, each containing 8 strings
         board = data["board"]
         if len(board) != 8:
             return False

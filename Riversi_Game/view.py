@@ -6,8 +6,6 @@ from tkinter import simpledialog
 import time
 import tkinter as tk
 from tkinter import Scrollbar, messagebox
-
-from numpy import delete
 from exceptions import SaveFormatException
 from controller import Controller
 
@@ -21,7 +19,12 @@ class Game(tk.Frame):
             parent, borderwidth=15, background="#6e3a00", width=500, height=500
         )
         self.pack()
-        self.button_frame = tk.Frame(self)
+
+        self.board_size = board_size
+        self.column_count = column_count
+        self.field_size = self.board_size / self.column_count
+        self.disk_size = int(0.8 * self.field_size)
+
         self.button_to_main_window = tk.Button(
             self,
             text="Menu",
@@ -35,6 +38,7 @@ class Game(tk.Frame):
             font=("Impact", 20),
         )
         self.button_to_main_window.pack()
+
         self.current_player_label = tk.Label(
             self,
             text="Player: black",
@@ -44,13 +48,7 @@ class Game(tk.Frame):
             pady=15,
         )
         self.current_player_label.pack()
-        self.board_size = board_size
-        self.column_count = column_count
-        self.field_size = self.board_size / self.column_count
-        self.disk_size = int(0.8 * self.field_size)
-        self.disk_list = [
-            [0 for _ in range(self.column_count)] for _ in range(self.column_count)
-        ]
+
         self.fields = self.fields = tk.Canvas(
             self,
             width=self.board_size,
@@ -58,7 +56,6 @@ class Game(tk.Frame):
             highlightbackground="#6e3a00",
         )
         self.fields.pack(fill="both")
-
         self.border_size = 5
 
         self.controller: Controller
@@ -107,10 +104,12 @@ class Game(tk.Frame):
             board (list[list[string]]): Board state to be reflected in ui
         """
         self.fields.delete("tile")
+
         for x in range(self.column_count):
             for y in range(self.column_count):
                 if board[x][y] != "":
                     self.create_disk(x, y, board[x][y])
+
         self.fields.update()
 
     def mouse_click_handler(self, event):
@@ -133,7 +132,6 @@ class Game(tk.Frame):
         """
         col = event.y // self.field_size
         row = event.x // self.field_size
-        print(col, row)
         return col, row
 
     def create_start_disks(self):
@@ -163,7 +161,6 @@ class Game(tk.Frame):
             fill=color,
             tags="tile",
         )
-        self.disk_list[row][column] = disk
         return disk
 
     def set_current_player_label(self, player: str):
@@ -182,12 +179,14 @@ class Game(tk.Frame):
         """
 
         score_text = "Black: " + str(score[0]) + "\nWhite: " + str(score[1])
+
         if score[0] > score[1]:
             score_text += "\nBlack Won !!!"
         elif score[0] < score[1]:
-            score_text = "\nWhite Won !!!"
+            score_text += "\nWhite Won !!!"
         else:
-            score_text = "\nDRAW"
+            score_text += "\nDRAW"
+
         messagebox.showinfo("End Game", score_text)
 
     def pass_window(self):
@@ -240,8 +239,8 @@ class Menu(tk.Frame):
         super().__init__(
             parent, borderwidth=15, background="#6e3a00", width=500, height=500
         )
+
         self.root = parent
-        self.controller: Controller
         self.pack(expand=True, fill="both")
         self.label = tk.Label(
             self,
@@ -352,6 +351,8 @@ class Menu(tk.Frame):
         self.button_leaderboard.pack()
         self.button_exit.pack()
 
+        self.controller: Controller
+
     def set_controller(self, controller: Controller):
         """Sets controller
 
@@ -369,6 +370,7 @@ class Menu(tk.Frame):
         filepath = filedialog.askopenfilename(
             defaultextension="txt", initialdir="Saves"
         )
+
         try:
             self.controller.load_form_file(filepath)
             self.button_continue["state"] = "normal"
@@ -402,8 +404,8 @@ class Leaderboard(tk.Frame):
             parent, borderwidth=15, background="#6e3a00", width=500, height=500
         )
         self.root = parent
-        self.controller: Controller
         self.pack(expand=True, fill="both")
+
         self.button_to_main_window = tk.Button(
             self,
             text="Menu",
@@ -428,6 +430,7 @@ class Leaderboard(tk.Frame):
         )
         self.scroll_bar.pack(side="left", fill="y")
         self.leaderboard.pack(side="right", fill="both", expand=True)
+        self.controller: Controller
 
     def set_controller(self, controller: Controller):
         """Set controller
