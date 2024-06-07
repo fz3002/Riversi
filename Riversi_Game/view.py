@@ -1,10 +1,12 @@
 """Module containing views for application"""
 
+from json import JSONDecodeError
 from tkinter import filedialog
 from tkinter import simpledialog
 import time
 import tkinter as tk
 from tkinter import Scrollbar, messagebox
+from exceptions import SaveFormatException
 from controller import Controller
 
 
@@ -362,8 +364,14 @@ class Menu(tk.Frame):
         filepath = filedialog.askopenfilename(
             defaultextension="txt", initialdir="Saves"
         )
-        self.controller.load_form_file(filepath)
-        self.button_continue["state"] = "normal"
+        try:
+            self.controller.load_form_file(filepath)
+            self.button_continue["state"] = "normal"
+        except SaveFormatException as e:
+            messagebox.showinfo("Error", str(e))
+        except JSONDecodeError as e:
+            messagebox.showinfo("Error", str(e))
+        
 
     def new_game_button_action(self):
         """Action after pressing new game button

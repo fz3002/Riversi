@@ -1,8 +1,6 @@
 """Module containing controller class handling view and model/s
 """
 
-# TODO: Documentation
-# TODO: Exception
 # TODO: Cleanup
 
 import copy
@@ -10,6 +8,7 @@ import datetime
 import json
 import os
 from types import SimpleNamespace
+from exceptions import SaveFormatException
 from board import Board
 
 
@@ -224,42 +223,64 @@ class Controller:
         """
         print("Controller")
         print("validating")
-        if self.validate(self.board.player, int(x), int(y)):
+
+        if self.validate(self.board.player, int(x), int(y)) and (not self.board.ai or (self.board.ai and self.board.player == 1)
+        ):
             print("moving")
             self.board.board = self.move(int(x), int(y))
             self.view.draw_played_disk(int(x), int(y), self.board.get_player_color())
             self.view.update_board(self.board.board)
             self.switch_turn()
-            print("board:", *self.board.board, sep="\n")
-            if self.board.ai:
-                ai_move_result: tuple = self.alpha_beta_min_max(
-                    3, self.board.board, 1, -float("inf"), float("inf")
-                )
-                self.board.board = ai_move_result[1]
-                if len(ai_move_result) == 3:
-                    x_ai = ai_move_result[2][0]
-                    y_ai = ai_move_result[2][1]
-                    self.view.draw_played_disk(
-                        x_ai, y_ai, self.board.get_player_color()
-                    )
-                self.view.update_board(self.board.board)
-                print(self.board.board)
+            self.check_pass()
+            self.check_if_board_is_full()
+            print("passed : ", self.passed)
+
+            if self.passed:
+                print("1. " + self.board.get_player_color() + "Pass")
                 self.switch_turn()
-        self.check_pass()
-        self.check_if_board_is_full()
-        print("passed : ", self.passed)
+                self.view.pass_window()
 
-        if self.passed:
-            print("Pass")
+            if self.end:
+                score = self.get_score()
+                self.view.end_game_message(score)
+                (nickname_black, nickname_white) = self.view.leaderboard_window()
+                self.add_to_scoreboard(score, nickname_black, nickname_white)
+                self.save_scores()
+                self.end = False
+                self.passed = False
+                # TODO: block user after end game
+
+            print("board:", *self.board.board, sep="\n")
+
+        if self.board.ai and self.board.player == 1:
+            ai_move_result: tuple = self.alpha_beta_min_max(
+                3, self.board.board, 1, -float("inf"), float("inf")
+            )
+            self.board.board = ai_move_result[1]
+            if len(ai_move_result) == 3:
+                x_ai = ai_move_result[2][0]
+                y_ai = ai_move_result[2][1]
+                self.view.draw_played_disk(x_ai, y_ai, self.board.get_player_color())
+            self.view.update_board(self.board.board)
+            print(self.board.board)
             self.switch_turn()
-            self.view.pass_window()
+            self.check_pass()
+            self.check_if_board_is_full()
+            print("passed : ", self.passed)
 
-        if self.end:
-            score = self.get_score()
-            self.view.end_game_message(score)
-            (nickname_black, nickname_white) = self.view.leaderboard_window()
-            self.add_to_scoreboard(score, nickname_black, nickname_white)
-            self.save_scores()
+            if self.passed:
+                print("2." + self.board.get_player_color() + "Pass")
+                self.switch_turn()
+                self.view.pass_window()
+
+            if self.end:
+                score = self.get_score()
+                self.view.end_game_message(score)
+                (nickname_black, nickname_white) = self.view.leaderboard_window()
+                self.add_to_scoreboard(score, nickname_black, nickname_white)
+                self.save_scores()
+                self.end = False
+                self.passed = False
 
     def get_score(self) -> dict:
         """Function to get the score at the end of the game
@@ -334,14 +355,15 @@ class Controller:
         Args:
             filepath (str): file path taken from user
         """
-        # TODO: check format of save file
         with open(filepath, "r", encoding="UTF-8") as f:
             read_json = f.readline()
-            self.board = json.loads(
-                read_json, object_hook=lambda x: SimpleNamespace(**x)
-            )
-
-        self.view.update_board(self.board.board)
+            if self.__validate_data(json.loads(read_json)):
+                self.board = json.loads(
+                    read_json, object_hook=lambda x: SimpleNamespace(**x)
+                )
+                self.view.update_board(self.board.board)
+            else:
+                raise SaveFormatException(f"Invalid save file: {filepath}")
 
     def save_scores(self):
         """Function saving scoreboard to file"""
@@ -442,3 +464,31 @@ class Controller:
                     valid_moves.append((row[0], field[0]))
 
         return valid_moves
+
+    def __validate_data(self, data) -> bool:
+        required_keys = {
+            "ai": bool,
+            "player": int,
+            "passed": int,
+            "won": bool,
+            "board": list,
+        }
+
+        # Check if all required keys are present and have correct type
+        for key, value_type in required_keys.items():
+            if key not in data or not isinstance(data[key], value_type):
+                return False
+
+        # Check if board is a list of 8 lists, each containing 8 strings
+        board = data["board"]
+        if len(board) != 8:
+            return False
+
+        for row in board:
+            if not isinstance(row, list) or len(row) != 8:
+                return False
+            for cell in row:
+                if cell not in {"", "white", "black"}:
+                    return False
+
+        return True
