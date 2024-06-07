@@ -218,6 +218,7 @@ class Controller:
         return score
 
     def handle_user_input(self, x, y):
+        #TODO: Fix Passes
         """Method handling user input for given array coordinates
 
         Args:
@@ -239,26 +240,29 @@ class Controller:
             self.check_if_board_is_full()
             print("passed : ", self.passed)
 
-            if self.passed:
-                print("1. " + self.board.get_player_color() + "Pass")
-                self.switch_turn()
-                if not self.end:
-                    self.view.pass_window()
-
-            if self.end:
-                score = self.get_score()
-                self.view.end_game_message(score)
-                (nickname_black, nickname_white) = self.view.leaderboard_window()
-                self.add_to_scoreboard(score, nickname_black, nickname_white)
-                self.save_scores()
-                self.end = False
-                self.passed = False
-                # TODO: block user after end game
+            self.handle_pass()
 
             print("board:", *self.board.board, sep="\n")
 
         if self.board.ai and self.board.player == 1:
             self.ai_move()
+
+    def handle_pass(self):
+        """Handle pass and end"""
+        if self.passed:
+            self.switch_turn()
+            if not self.end:
+                self.view.pass_window()
+
+        if self.end:
+            # TODO: block user after end game
+            score = self.get_score()
+            self.view.end_game_message(score)
+            (nickname_black, nickname_white) = self.view.leaderboard_window()
+            self.add_to_scoreboard(score, nickname_black, nickname_white)
+            self.save_scores()
+            self.end = False
+            self.passed = False
 
     def ai_move(self):
         """Computer move"""
@@ -277,20 +281,7 @@ class Controller:
         self.check_if_board_is_full()
         print("passed : ", self.passed)
 
-        if self.passed:
-            print("2." + self.board.get_player_color() + "Pass")
-            self.switch_turn()
-            if not self.end:
-                self.view.pass_window(True)
-
-        if self.end:
-            score = self.get_score()
-            self.view.end_game_message(score)
-            (nickname_black, nickname_white) = self.view.leaderboard_window()
-            self.add_to_scoreboard(score, nickname_black, nickname_white)
-            self.save_scores()
-            self.end = False
-            self.passed = False
+        self.handle_pass()
 
     def get_score(self) -> dict:
         """Function to get the score at the end of the game
@@ -400,14 +391,16 @@ class Controller:
             nickname_black (str): nickname given by black player
             nickname_white (str): nickname given by white player
         """
-        if nickname_black not in self.scoreboard.keys() and nickname_black != "null":
-            self.scoreboard[nickname_black] = score[0]
-        else:
-            self.scoreboard[nickname_black] += score[0]
-        if nickname_white not in self.scoreboard.keys() and nickname_white != "null":
-            self.scoreboard[nickname_white] = score[1]
-        else:
-            self.scoreboard[nickname_white] += score[1]
+        if nickname_black != "null":
+            if nickname_black not in self.scoreboard.keys():
+                self.scoreboard[nickname_black] = score[0]
+            else:
+                self.scoreboard[nickname_black] += score[0]
+        if nickname_white != "null":
+            if nickname_white not in self.scoreboard.keys():
+                self.scoreboard[nickname_white] = score[1]
+            else:
+                self.scoreboard[nickname_white] += score[1]
         self.leaderboard.populate_leaderboard(self.scoreboard)
 
     def new_game(self):
@@ -431,6 +424,11 @@ class Controller:
             self.view.set_current_player_label("white")
 
     def is_game_vs_ai(self):
+        """Is game vs ai
+
+        Returns:
+            bool: true if is
+        """
         return self.board.ai
 
     def __generate_save_file_name(self) -> str:

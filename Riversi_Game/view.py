@@ -6,6 +6,8 @@ from tkinter import simpledialog
 import time
 import tkinter as tk
 from tkinter import Scrollbar, messagebox
+
+from numpy import delete
 from exceptions import SaveFormatException
 from controller import Controller
 
@@ -188,7 +190,7 @@ class Game(tk.Frame):
             score_text = "\nDRAW"
         messagebox.showinfo("End Game", score_text)
 
-    def pass_window(self, player_passed = False):
+    def pass_window(self, player_passed=False):
         """Show popup message informing user of passing
 
         Args:
@@ -196,11 +198,12 @@ class Game(tk.Frame):
         """
         messagebox.showinfo("Pass window", "Pass")
         if player_passed:
+            self.controller.check_pass()
+            self.controller.check_if_board_is_full()
+            self.controller.handle_pass()
             self.controller.ai_move()
 
     def leaderboard_window(self) -> tuple:
-        #TODO: don't ask for nickname of white if playing vs ai
-        #TODO: handle one of the users not wanting to add nickname
         """Ask user for nicknames of players
 
         Returns:
@@ -215,7 +218,8 @@ class Game(tk.Frame):
             nickname_black = simpledialog.askstring(
                 "Nickname", "Enter Nickname: ", parent=self
             )
-        else: nickname_black = "null"
+        else:
+            nickname_black = "null"
         nickname_white = "null"
         if not self.controller.is_game_vs_ai():
             choice = messagebox.askquestion(
@@ -236,6 +240,7 @@ class Menu(tk.Frame):
     Args:
         tk (Frame): Extending
     """
+
     def __init__(self, parent):
         super().__init__(
             parent, borderwidth=15, background="#6e3a00", width=500, height=500
@@ -361,13 +366,11 @@ class Menu(tk.Frame):
         self.controller = controller
 
     def save_button_action(self):
-        """Action after pressing button_save_game
-        """
+        """Action after pressing button_save_game"""
         self.controller.save_to_file()
 
     def load_button_action(self):
-        """Action after pressing button_load_game
-        """
+        """Action after pressing button_load_game"""
         filepath = filedialog.askopenfilename(
             defaultextension="txt", initialdir="Saves"
         )
@@ -378,18 +381,15 @@ class Menu(tk.Frame):
             messagebox.showinfo("Error", str(e))
         except JSONDecodeError as e:
             messagebox.showinfo("Error", str(e))
-        
 
     def new_game_button_action(self):
-        """Action after pressing new game button
-        """
+        """Action after pressing new game button"""
         self.button_continue["state"] = "normal"
         self.controller.new_game()
         self.root.show_game()
 
     def new_game_vs_ai_button_action(self):
-        """action after pressing new game vs ai button
-        """
+        """action after pressing new game vs ai button"""
         self.button_continue["state"] = "normal"
         self.controller.new_game_vs_ai()
         self.root.show_game()
@@ -401,6 +401,7 @@ class Leaderboard(tk.Frame):
     Args:
         tk (Frame): Extends
     """
+
     def __init__(self, parent):
         super().__init__(
             parent, borderwidth=15, background="#6e3a00", width=500, height=500
@@ -441,11 +442,12 @@ class Leaderboard(tk.Frame):
         """
         self.controller = controller
 
-    def populate_leaderboard(self, score:dict):
+    def populate_leaderboard(self, score: dict):
         """Add score board from controller to leaderboard text field
 
         Args:
             score (dict): scoreboard
         """
+        self.leaderboard.delete("1.0", "end")
         for key, value in score.items():
             self.leaderboard.insert(tk.END, f"{key}: {value}\n")
