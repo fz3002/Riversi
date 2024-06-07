@@ -237,17 +237,27 @@ class Controller:
             self.view.update_board(self.board.board)
             self.switch_turn()
         
-        self.check_pass()
-        self.check_if_board_is_full()
-        print("passed : ", self.passed)
+        #Check if next player needs to pass
+        while(True):
+            self.check_pass()
+            self.check_if_board_is_full()
+            print("passed : ", self.passed)
 
-        self.handle_pass()
+            self.handle_pass()
 
-        print("board:", *self.board.board, sep="\n")
+            print("board:", *self.board.board, sep="\n")
 
-        if self.board.ai and self.board.player == 1:
-            print("Computer move")
-            self.ai_move()
+            if self.board.ai and self.board.player == 1:
+                print("Computer move")
+                self.ai_move()
+                self.check_pass()
+                self.check_if_board_is_full()
+                print("passed : ", self.passed)
+                self.handle_pass()
+                if not self.passed:
+                    break
+            else :
+                break #when ai needs to pass or not ai            
 
     def handle_pass(self):
         """Handle pass and end"""
@@ -282,11 +292,6 @@ class Controller:
         self.view.update_board(self.board.board)
         print(self.board.board)
         self.switch_turn()
-        self.check_pass()
-        self.check_if_board_is_full()
-        print("passed : ", self.passed)
-
-        self.handle_pass()
 
     def get_score(self) -> dict:
         """Function to get the score at the end of the game
