@@ -9,8 +9,8 @@ import view
 class App(tk.Tk):
     """Main driving class of the application
 
-    Arguments:
-        tk -- extended class
+    Args:
+        tk (TK): extended class
     """
     def __init__(self):
         super().__init__()

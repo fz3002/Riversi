@@ -17,7 +17,7 @@ class Controller:
     """Controller class handling communications between model and view in mvc"""
 
     def __init__(self, model, view, menu, leaderboard):
-        self.board = model
+        self.board: Board = model
         self.view = view
         self.menu = menu
         self.leaderboard = leaderboard
@@ -26,15 +26,16 @@ class Controller:
         self.scoreboard: dict[str, int]
         self.read_scores()
 
-    def validate(self, player, x, y):
+    def validate(self, player, x, y) -> bool:
         """Method validating moves given by user
 
-        Arguments:
-            x -- first coordinate of move
-            y -- last coordinate of move
+        Args:
+            player (int): 0 or 1 depending on color
+            x (int): first coordinate of move
+            y (int): last coordinate of move
 
         Returns:
-            True if move is valid, False otherwise
+            bool: True if move is valid, False otherwise
         """
 
         board = self.board.board
@@ -72,15 +73,15 @@ class Controller:
 
         return valid
 
-    def move(self, x, y):
+    def move(self, x, y) -> list:
         """Function making a move
 
-        Arguments:
-            x -- first coordinate of move
-            y -- last coordinate of move
+        Args:
+            x (int): first coordinate of move
+            y (int): last coordinate of move
 
         Returns:
-            _description_
+            list(list(str)): board after move
         """
 
         board = self.board.board
@@ -129,30 +130,32 @@ class Controller:
     ) -> tuple:
         """min max function using alpha beta pruning to find best move for ai
 
-        Arguments:
-            depth -- depth of the decision tree
-            node -- starting board state
-            maximizing_player -- True(or 1) if player is wants move with highest score
+        Args:
+            depth (int): depth of the decision tree
+            node (list): starting board state
+            maximizing_player (bool): True(or 1) if player is wants move with highest score
                                     else with the lowest (usually white player is maximizing)
-            alpha -- minimum score maximizing player is assured of
-            beta -- maximum score minimizing player is assured of
+            alpha (int): minimum score maximizing player is assured of
+            beta (int): maximum score minimizing player is assured of
+
 
         Returns:
-            Depending on depth of current recursion depth returns a tuple 
+            tuple: Depending on depth of current recursion depth returns a tuple
             with score and board state with the best score,
             and when we are not considering leafs of the tree coordinates of move made.
+
         """
         boards = []
         choices = []
-
-        if depth == 0:
-            return (self.__move_score(node, maximizing_player), node)
 
         for x in range(8):
             for y in range(8):
                 if self.validate(maximizing_player, x, y):
                     boards.append(self.move(x, y))
                     choices.append((x, y))
+
+        if depth == 0 or len(choices) == 0:
+            return (self.__move_score(node, maximizing_player), node)
 
         if maximizing_player:
             best = -float("inf")
@@ -183,17 +186,17 @@ class Controller:
                     break
             return (best, best_board, best_choice)
 
-    def __move_score(self, board, maximizing_player):
-        """Simple algorithm evaluating score of given board state 
+    def __move_score(self, board, maximizing_player) -> int:
+        """Simple algorithm evaluating score of given board state
         for maximizing or minimizing player
 
-        Arguments:
-            board -- array representing board state after move
-            maximizingPlayer -- True(or 1) if player is wants move with highest score
+        Args:
+            board (list(list(str))): array representing board state after move
+            maximizing_player (bool): True(or 1) if player is wants move with highest score
                                     else with the lowest (usually white player is maximizing)
 
         Returns:
-            Score of given board state
+            int: Score of given board state
         """
         score = 0
 
@@ -215,9 +218,9 @@ class Controller:
     def handle_user_input(self, x, y):
         """Method handling user input for given array coordinates
 
-        Arguments:
-            x -- first array coordinate
-            y -- second array coordinate
+        Args:
+            x (float): first array coordinate
+            y (float): second array coordinate
         """
         print("Controller")
         print("validating")
@@ -233,9 +236,12 @@ class Controller:
                     3, self.board.board, 1, -float("inf"), float("inf")
                 )
                 self.board.board = ai_move_result[1]
-                x_ai = ai_move_result[2][0]
-                y_ai = ai_move_result[2][1]
-                self.view.draw_played_disk(x_ai, y_ai, self.board.get_player_color())
+                if len(ai_move_result) == 3:
+                    x_ai = ai_move_result[2][0]
+                    y_ai = ai_move_result[2][1]
+                    self.view.draw_played_disk(
+                        x_ai, y_ai, self.board.get_player_color()
+                    )
                 self.view.update_board(self.board.board)
                 print(self.board.board)
                 self.switch_turn()
@@ -255,11 +261,11 @@ class Controller:
             self.add_to_scoreboard(score, nickname_black, nickname_white)
             self.save_scores()
 
-    def get_score(self):
+    def get_score(self) -> dict:
         """Function to get the score at the end of the game
 
         Returns:
-            Dictionary of key:player and value:score
+            dict(int, int): Dictionary of key:player and value:score
         """
         scores = {0: 0, 1: 0}
         for row in enumerate(self.board.board):
@@ -271,11 +277,7 @@ class Controller:
         return scores
 
     def check_pass(self):
-        """Checks if player needs to pass as there is no valid move to be made
-
-        Returns:
-            True if player needs to pass, False otherwise
-        """
+        """Checks if player needs to pass as there is no valid move to be made"""
         should_pass = True
         valid_moves = self.__find_valid_moves()
         print(valid_moves)
@@ -326,12 +328,13 @@ class Controller:
         with open(filepath, "w", encoding="UTF-8") as f:
             f.write(repr(self.board))
 
-    def load_form_file(self, filepath):
+    def load_form_file(self, filepath: str):
         """Function loading game state from file
 
-        Arguments:
-            filepath -- file path taken from user
+        Args:
+            filepath (str): file path taken from user
         """
+        # TODO: check format of save file
         with open(filepath, "r", encoding="UTF-8") as f:
             read_json = f.readline()
             self.board = json.loads(
@@ -356,14 +359,14 @@ class Controller:
 
         self.leaderboard.populate_leaderboard(self.scoreboard)
 
-    def add_to_scoreboard(self, score, nickname_black, nickname_white):
+    def add_to_scoreboard(self, score: dict, nickname_black: str, nickname_white: str):
         """Function adding score to scoreboard
 
-        Arguments:
-            score -- dictionary of scores gotten from get score function 
+        Args:
+            score (dict): dictionary of scores gotten from get score function
                     with players as keys and scores of played game as values
-            nickname_black -- nickname given by black player
-            nickname_white -- nickname given by white player
+            nickname_black (str): nickname given by black player
+            nickname_white (str): nickname given by white player
         """
         if nickname_black not in self.scoreboard.keys():
             self.scoreboard[nickname_black] = score[0]
@@ -399,22 +402,23 @@ class Controller:
         """Generates game save file name
 
         Returns:
-            File name as save+{current date}
+            str: File name as save+{current date}
+
         """
         now = datetime.datetime.now()
         date_str = now.strftime("%Y-%m-%d_%H-%M-%S")
         return f"save_{date_str}.txt"
 
-    def __get_neighbors(self, board, x, y):
+    def __get_neighbors(self, board: list, x: int, y: int) -> list:
         """Class getting neighbors of given coordinates on the board
 
-        Arguments:
-            board -- array representing game board
-            x -- first coordinate
-            y -- last coordinate
+        Args:
+            board (list): array representing game board
+            x (int): first coordinate
+            y (int): last coordinate
 
         Returns:
-            list of neighbors of given coordinates
+            list: neighbors of given coordinates
         """
         neighbors = []
         for i in range(max(0, x - 1), min(x + 2, 8)):
@@ -423,11 +427,12 @@ class Controller:
                     neighbors.append((i, j))
         return neighbors
 
-    def __find_valid_moves(self):
+    def __find_valid_moves(self) -> list:
         """Function finding all valid moves on the board
 
+
         Returns:
-            List of tuples with coordinates of valid moves
+            list: List of tuples with coordinates of valid moves
         """
         print("player: ", self.board.player)
         valid_moves: list[tuple[int, int]] = []

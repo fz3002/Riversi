@@ -1,4 +1,5 @@
 """Module containing views for application"""
+
 from tkinter import filedialog
 from tkinter import simpledialog
 import time
@@ -7,9 +8,9 @@ from tkinter import Scrollbar, messagebox
 from controller import Controller
 
 
-
 class Game(tk.Frame):
     """Class representing game windows"""
+
     def __init__(self, parent, board_size=400, column_count=8):
         self.root = parent
         super().__init__(
@@ -44,7 +45,7 @@ class Game(tk.Frame):
         self.field_size = self.board_size / self.column_count
         self.disk_size = int(0.8 * self.field_size)
         self.disk_list = [
-            [None for _ in range(self.column_count)] for _ in range(self.column_count)
+            [0 for _ in range(self.column_count)] for _ in range(self.column_count)
         ]
         self.fields = self.fields = tk.Canvas(
             self,
@@ -65,8 +66,8 @@ class Game(tk.Frame):
     def set_controller(self, controller: Controller):
         """Controller setter
 
-        Arguments:
-            controller -- instance of Controller
+        Args:
+            controller (Controller): instance of Controller
         """
         self.controller = controller
 
@@ -117,14 +118,14 @@ class Game(tk.Frame):
         (x, y) = self.get_field_coordinates_after_mouse_click(event)
         self.controller.handle_user_input(x, y)
 
-    def get_field_coordinates_after_mouse_click(self, event):
+    def get_field_coordinates_after_mouse_click(self, event) -> tuple[float, float]:
         """Function translating mouse position to board coordinates
 
         Args:
             event (event): mouse click event
 
         Returns:
-            tuple(float, float): mouse click coordinates on board
+            tuple[float, float]: mouse click coordinates on board
         """
         col = event.y // self.field_size
         row = event.x // self.field_size
@@ -132,12 +133,23 @@ class Game(tk.Frame):
         return col, row
 
     def create_start_disks(self):
+        """Creates starting disk"""
         self.create_disk(3, 3, "white")
         self.create_disk(4, 4, "white")
         self.create_disk(4, 3, "black")
         self.create_disk(3, 4, "black")
 
-    def create_disk(self, row, column, color):
+    def create_disk(self, row: int, column: int, color: str) -> int:
+        """Function creating oval (disk) on canvas
+
+        Args:
+            row (int): row of board
+            column (int): column of board
+            color (str): color of disk
+
+        Returns:
+            int: id of disk
+        """
         padding = self.field_size - self.disk_size
         disk = self.fields.create_oval(
             (column * self.field_size) + padding,
@@ -150,10 +162,21 @@ class Game(tk.Frame):
         self.disk_list[row][column] = disk
         return disk
 
-    def set_current_player_label(self, player):
+    def set_current_player_label(self, player: str):
+        """Sets label telling which player's turn is it
+
+        Args:
+            player (str): Current player color
+        """
         self.current_player_label.config(text="Player: " + player, foreground=player)
 
-    def end_game_message(self, score):
+    def end_game_message(self, score: dict):
+        """Show popup message after game end
+
+        Args:
+            score (dict): dictionary containing score information
+        """
+
         score_text = "Black: " + str(score[0]) + "\nWhite: " + str(score[1])
         if score[0] > score[1]:
             score_text += "\nBlack Won !!!"
@@ -164,9 +187,18 @@ class Game(tk.Frame):
         messagebox.showinfo("End Game", score_text)
 
     def pass_window(self):
+        """Show popup message informing user of passing
+        """
         messagebox.showinfo("Pass window", "Pass")
 
-    def leaderboard_window(self):
+    def leaderboard_window(self) -> tuple:
+        #TODO: don't ask for nickname of white if playing vs ai
+        #TODO: handle one of the users not wanting to add nickname
+        """Ask user for nicknames of players
+
+        Returns:
+            tuple: nicknames
+        """
         choice = messagebox.askquestion(
             title="LeaderBoard",
             message="BlackPlayer | Do you want to add your score to leaderboard",
@@ -190,6 +222,11 @@ class Game(tk.Frame):
 
 
 class Menu(tk.Frame):
+    """Menu window class
+
+    Args:
+        tk (Frame): Extending
+    """
     def __init__(self, parent):
         super().__init__(
             parent, borderwidth=15, background="#6e3a00", width=500, height=500
@@ -285,7 +322,7 @@ class Menu(tk.Frame):
             font=("Impact", 20),
             pady=5,
         )
-        self.button_leaderBoard = tk.Button(
+        self.button_leaderboard = tk.Button(
             self,
             text="Leaderboard",
             command=self.root.show_leaderboard,
@@ -303,16 +340,25 @@ class Menu(tk.Frame):
         self.button_play_vs_ai.pack()
         self.button_save.pack()
         self.button_load.pack()
-        self.button_leaderBoard.pack()
+        self.button_leaderboard.pack()
         self.button_exit.pack()
 
-    def set_controller(self, controller):
+    def set_controller(self, controller: Controller):
+        """Sets controller
+
+        Args:
+            controller (Controller): Controller instance
+        """
         self.controller = controller
 
     def save_button_action(self):
+        """Action after pressing button_save_game
+        """
         self.controller.save_to_file()
 
     def load_button_action(self):
+        """Action after pressing button_load_game
+        """
         filepath = filedialog.askopenfilename(
             defaultextension="txt", initialdir="Saves"
         )
@@ -320,17 +366,26 @@ class Menu(tk.Frame):
         self.button_continue["state"] = "normal"
 
     def new_game_button_action(self):
+        """Action after pressing new game button
+        """
         self.button_continue["state"] = "normal"
         self.controller.new_game()
         self.root.show_game()
 
     def new_game_vs_ai_button_action(self):
+        """action after pressing new game vs ai button
+        """
         self.button_continue["state"] = "normal"
         self.controller.new_game_vs_ai()
         self.root.show_game()
 
 
 class Leaderboard(tk.Frame):
+    """Leaderboard window class
+
+    Args:
+        tk (Frame): Extends
+    """
     def __init__(self, parent):
         super().__init__(
             parent, borderwidth=15, background="#6e3a00", width=500, height=500
@@ -363,11 +418,19 @@ class Leaderboard(tk.Frame):
         self.scroll_bar.pack(side="left", fill="y")
         self.leaderboard.pack(side="right", fill="both", expand=True)
 
-        # TODO: add elements to the leaderboard
+    def set_controller(self, controller: Controller):
+        """Set controller
 
-    def set_controller(self, controller):
+        Args:
+            controller (Controller): Controller instance
+        """
         self.controller = controller
 
-    def populate_leaderboard(self, dict):
-        for key, value in dict.items():
+    def populate_leaderboard(self, score:dict):
+        """Add score board from controller to leaderboard text field
+
+        Args:
+            score (dict): scoreboard
+        """
+        for key, value in score.items():
             self.leaderboard.insert(tk.END, f"{key}: {value}\n")
