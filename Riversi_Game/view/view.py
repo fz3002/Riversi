@@ -6,8 +6,8 @@ from tkinter import simpledialog
 import time
 import tkinter as tk
 from tkinter import Scrollbar, messagebox
-from exceptions import SaveFormatException
-from controller import Controller
+from exceptions.exceptions import SaveFormatException
+from controller.controller import Controller
 
 
 class Game(tk.Frame):
@@ -427,6 +427,7 @@ class Leaderboard(tk.Frame):
             foreground="#ffe200",
             yscrollcommand=self.scroll_bar.set,
             font=("Impact", 20),
+            state = "disabled"
         )
         self.scroll_bar.pack(side="left", fill="y")
         self.leaderboard.pack(side="right", fill="both", expand=True)
@@ -446,6 +447,8 @@ class Leaderboard(tk.Frame):
         Args:
             score (dict): scoreboard
         """
+        self.leaderboard.configure(state="normal")
         self.leaderboard.delete("1.0", "end")
         for key, value in score.items():
             self.leaderboard.insert(tk.END, f"{key}: {value}\n")
+        self.leaderboard.configure(state="disabled")

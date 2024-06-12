@@ -1,8 +1,8 @@
 """Main driving module of the application"""
 import tkinter as tk
-import controller
-import board
-import view
+import controller.controller as controller
+import model.board as board
+import view.view as view
 
 
 

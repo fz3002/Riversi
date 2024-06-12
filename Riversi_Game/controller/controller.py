@@ -6,8 +6,8 @@ import datetime
 import json
 import os
 from types import SimpleNamespace
-from exceptions import SaveFormatException
-from board import Board
+from exceptions.exceptions import SaveFormatException
+from model.board import Board
 
 
 class Controller:
