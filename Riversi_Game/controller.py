@@ -503,9 +503,7 @@ class Controller:
         required_keys = {
             "ai": bool,
             "player": int,
-            "passed": int,
-            "won": bool,
-            "board": list,
+            "board": list
         }
 
         for key, value_type in required_keys.items():
