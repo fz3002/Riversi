@@ -14,6 +14,7 @@ class Board:
         self.board[3][4] = "black"
         self.board[4][3] = "black"
         self.board[4][4] = "white"
+        
 
     def __repr__(self) -> str:
         return json.dumps(self.__dict__)

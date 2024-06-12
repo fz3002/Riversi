@@ -375,10 +375,14 @@ class Controller:
         with open(filepath, "r", encoding="UTF-8") as f:
             read_json = f.readline()
             if self.__validate_data(json.loads(read_json)):
-                self.board = json.loads(
+                loaded_board = json.loads(
                     read_json, object_hook=lambda x: SimpleNamespace(**x)
                 )
+                self.board.board = loaded_board.board
+                self.board.ai = loaded_board.ai
+                self.board.player = loaded_board.player
                 self.view.update_board(self.board.board)
+                self.view.set_current_player_label(self.board.get_player_color())
             else:
                 raise SaveFormatException(f"Invalid save file: {filepath}")
 
